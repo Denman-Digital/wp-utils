@@ -1,0 +1,40 @@
+{
+	"name": "denman-digital/wp-utils",
+	"description": "PHP utilities for WordPress development.",
+	"version": "1.0.0",
+	"type": "library",
+	"keywords": [
+		"WordPress",
+		"Theme",
+		"Plugin"
+	],
+	"homepage": "https://github.com/denman-digital/wp-utils",
+	"authors": [
+		{
+			"name": "Contributors",
+			"homepage": "https://github.com/denman-digital/wp-utils/graphs/contributors"
+		}
+	],
+	"license": "MIT",
+	"require": {
+		"php": ">=7.3"
+	},
+	"require-dev": {
+		"php-parallel-lint/php-console-highlighter": "^0.5.0",
+		"php-parallel-lint/php-parallel-lint": "^1.2.0",
+		"php-stubs/wordpress-stubs": "^5.6",
+		"paulthewalton/acf-pro-stubs": "5.8.9.1"
+	},
+	"scripts": {
+		"lint": "@php ./vendor/bin/parallel-lint --exclude .git --exclude vendor ."
+	},
+	"support": {
+		"issues": "https://github.com/denman-digital/wp-utils/issues",
+		"source": "https://github.com/denman-digital/wp-utils"
+	},
+	"autoload": {
+		"psr-0": {
+			"Denman_Utils\\": ""
+		}
+	}
+}
