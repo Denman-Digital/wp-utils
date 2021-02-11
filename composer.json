@@ -8,6 +8,7 @@
 		"Theme",
 		"Plugin"
 	],
+	"readme": "readme.md",
 	"homepage": "https://github.com/denman-digital/wp-utils",
 	"authors": [
 		{
