@@ -496,29 +496,39 @@ function ob_return($output_fn, $args = [], $output_only = true)
 
 /**
  * Like get_template_part() but lets you pass args to the template file.
- * Args are available in the template as $template_args array
- * Based on Humanmade's hm_get_template_part()
+ * Args are available in the template as $template_args array.
+ * Based on Humanmade's hm_get_template_part().
  *
  * @global $post
  *
- * @uses join_path_segments
- *
- * @param string[]|string $file Path to template file.
+ * @param string[]|string $path Path(s) to template file. If passed an array of strings, it will treat attempt to join them with hyphens into a single path. If no such file can be found, it will try again iteratively, dropping the last piece until a valid file can be found.
  * @param mixed[]|object|string $template_args Optional. wp_args style argument list, with some special keys. Default empty array.
  * @param bool $template_args["set_post_data"] Setup post data for the template
  * @param bool $template_args["return"] If truthy, buffer template output and return as string, if `false` return `false`
  * @param mixed[]|object|string $cache_args Optional. Default empty array.
  * @return void|string
  */
-function get_template_part_with($file, $template_args = [], $cache_args = [])
+function get_template_part_with($path, $template_args = [], $cache_args = [])
 {
 	global $post;
 
-	if (is_array($file)) {
-		$file = join_path_segments($file);
-	} else if (!is_string($file)) {
-		throw new InvalidArgumentException("\$file must be a string or array of strings");
+	if (is_array($path)) {
+		$path = array_filter($path, "is_string");
+	} else if (!is_string($path)) {
+		throw new InvalidArgumentException("\$path must be a string or array of strings");
 	}
+	// Iterate over possible file paths
+	$path = assert_array($path);
+	while (!empty($file) && $path) {
+		$test_path = str_prefix(join("-", $path), "/") . ".php";
+		if (file_exists(get_stylesheet_directory() . $test_path)) {
+			$file = get_stylesheet_directory() . $test_path;
+		} elseif (file_exists(get_template_directory() . $test_path)) {
+			$file = get_template_directory() . $test_path;
+		}
+		array_pop($path);
+	}
+	$file = $file ?? "";
 
 	$template_args = wp_parse_args($template_args);
 	$cache_args = wp_parse_args($cache_args);
@@ -541,11 +551,7 @@ function get_template_part_with($file, $template_args = [], $cache_args = [])
 	if (!empty($template_args['set_post_data'])) {
 		setup_postdata($post);
 	}
-	if (file_exists(get_stylesheet_directory() . '/' . $file . '.php')) {
-		$file = get_stylesheet_directory() . '/' . $file . '.php';
-	} elseif (file_exists(get_template_directory() . '/' . $file . '.php')) {
-		$file = get_template_directory() . '/' . $file . '.php';
-	}
+
 	ob_start();
 	$return = require $file;
 	$data = ob_get_clean();
@@ -560,39 +566,6 @@ function get_template_part_with($file, $template_args = [], $cache_args = [])
 	}
 	echo $data;
 }
-
-// /**
-//  * Try to determine if site is being served from localhost
-//  *
-//  * @return bool
-//  */
-// function is_local()
-// {
-//     return $_SERVER['SERVER_NAME'] == 'localhost' || in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '0.0.0.0', '::1']);
-// }
-
-// /**
-//  * Try to determine if site is being served from a dev environment by checking for:
-//  * - single segment domain (i.e. 'localhost')
-//  * - IP address domain
-//  * - dev-related subdomain
-//  * - dev-related TLD
-//  *
-//  * @uses is_local
-//  *
-//  * @return bool
-//  */
-// function is_dev_mode()
-// {
-//     if (is_local()) {
-//         return true;
-//     }
-//     $url = 'http://' . $_SERVER['SERVER_NAME'];
-//     $domain_segments = explode(".", parse_url($url, PHP_URL_HOST));
-//     $dev_subdomains = ['test', 'testing', 'sandbox', 'local', 'stage', 'staging'];
-//     $dev_tlds = ['test', 'local', 'localhost', 'dev', 'invalid', 'example', 'app'];
-//     return count($domain_segments) == 1 || preg_match('/(\d{0,3}\.?){4}/', $_SERVER['SERVER_NAME']) || in_array($domain_segments[0], $dev_subdomains) || in_array(end($domain_segments), $dev_tlds);
-// }
 
 /**
  * Write to the debug log when unable to use var_dump()
@@ -736,7 +709,6 @@ function class_names($classes)
 	}
 	return $class_names;
 }
-
 
 /**
  * Resolve to a string of space-separated class names.
@@ -1137,31 +1109,6 @@ function get_custom_post_types($exclude = null)
 	);
 }
 
-// /**
-//  * Get the primary term of a taxonomy for a post
-//  *
-//  * @uses resolve_post
-//  * @uses resolve_taxonomy
-//  *
-//  * @param WP_Taxonomy|string $taxonomy
-//  * @param WP_Post|int|string|null $post
-//  * @param WP_Term|void
-//  */
-// function get_primary_term($taxonomy, $post = null)
-// {
-// 	$post = resolve_post($post);
-// 	$taxonomy = resolve_taxonomy($taxonomy);
-// 	if (!$taxonomy || !$post) {
-// 		return;
-// 	}
-// 	$term_list = wp_get_post_terms($post->ID, $taxonomy->name, ['fields' => 'all']);
-// 	foreach ($term_list as $term) {
-// 		if (get_post_meta($post->ID, "_yoast_wpseo_primary_$taxonomy->name", true) == $term->term_id) {
-// 			return $term;
-// 		}
-// 	}
-// }
-
 /**
  * Get a string representation of elapsed time.
  *
@@ -1440,6 +1387,10 @@ function array_force_assoc($array)
 	return array_combine($keys, $values);
 }
 
+
+/**
+ * Undo WordPress' automatic <p> tagging.
+ */
 function reverse_wpautop($str)
 {
 	//remove any new lines already in there
