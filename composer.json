@@ -34,8 +34,6 @@
 		"source": "https://github.com/denman-digital/wp-utils"
 	},
 	"autoload": {
-		"psr-0": {
-			"Denman_Utils\\": ""
-		}
+		"files": ["utils.php"]
 	}
 }
