@@ -1,7 +1,7 @@
 {
 	"name": "denman-digital/wp-utils",
 	"description": "PHP utilities for WordPress development.",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"type": "library",
 	"keywords": [
 		"WordPress",
