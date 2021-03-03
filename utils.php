@@ -739,7 +739,7 @@ function html_attrs($attrs)
 {
 	$attrs = array_map(function ($value) {
 		return fallback_until("is_string", $value, esc_attr(var_export($value, true)));
-	}, array_filter($attrs, "Utils\is_not_null"));
+	}, array_filter($attrs, "Denman_Utils\\is_not_null"));
 	$output = "";
 	foreach ($attrs as $name => $value) {
 		if (is_numeric($name)) {
