@@ -519,15 +519,19 @@ function get_template_part_with($path, $template_args = [], $cache_args = [])
 	}
 	// Iterate over possible file paths
 	$path = assert_array($path);
-	while (!empty($file) && $path) {
+	$file = null;
+	$stylesheet_dir = get_stylesheet_directory();
+	$template_dir = get_template_directory();
+	while (empty($file) && $path) {
 		$test_path = str_prefix(join("-", $path), "/") . ".php";
-		if (file_exists(get_stylesheet_directory() . $test_path)) {
-			$file = get_stylesheet_directory() . $test_path;
-		} elseif (file_exists(get_template_directory() . $test_path)) {
-			$file = get_template_directory() . $test_path;
+		if (file_exists($stylesheet_dir . $test_path)) {
+			$file = $stylesheet_dir . $test_path;
+		} elseif (file_exists($template_dir . $test_path)) {
+			$file = $template_dir . $test_path;
 		}
 		array_pop($path);
 	}
+
 	$file = $file ?? "";
 
 	$template_args = wp_parse_args($template_args);
