@@ -501,10 +501,13 @@ function ob_return($output_fn, $args = [], $output_only = true)
  *
  * @global $post
  *
+ * @uses resolve_post() to resolve $template_args["post"].
+ *
  * @param string[]|string $path Path(s) to template file. If passed an array of strings, it will treat attempt to join them with hyphens into a single path. If no such file can be found, it will try again iteratively, dropping the last piece until a valid file can be found.
  * @param mixed[]|object|string $template_args Optional. wp_args style argument list, with some special keys. Default empty array.
  * @param bool $template_args["set_post_data"] Setup post data for the template
- * @param bool $template_args["return"] If truthy, buffer template output and return as string, if `false` return `false`
+ * @param bool $template_args["return"] If truthy, buffer template output and return as string, if `false` return `false`.
+ * @param WP_Post|int|string $template_args["post"] If seting-up post data, use this post, falling back to the global $post.
  * @param mixed[]|object|string $cache_args Optional. Default empty array.
  * @return void|string
  */
@@ -553,6 +556,7 @@ function get_template_part_with($path, $template_args = [], $cache_args = [])
 		}
 	}
 	if (!empty($template_args['set_post_data'])) {
+		$post = resolve_post($template_args['post'] ?? 0) ?? $post;
 		setup_postdata($post);
 	}
 
