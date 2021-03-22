@@ -654,6 +654,30 @@ function fallback_assign(&$subject, $validation_callback, ...$values)
 }
 
 /**
+ * Like wp_parse_args, but limits results to keys defined in 2nd parameter.
+ *
+ * @param string|array|object $args Arguments to parse.
+ * @param array $defaults_and_allowed_keys Default values and allowed keys.
+ * @return array
+ */
+function parse_args($args, $defaults_and_allowed_keys = []): array
+{
+	$defaults = array_filter($defaults_and_allowed_keys, "is_string", ARRAY_FILTER_USE_KEY);
+	$allowed_keys = [];
+	foreach ($args as $key => $value) {
+		if (is_string($key) && $key) {
+			$allowed_keys[] = $key;
+		} else if (is_string($value) && $value) {
+			$allowed_keys[] = $value;
+		}
+	}
+	$parsed_args = wp_parse_args($args, $defaults);
+	$allowed_args = array_include_keys($parsed_args, $allowed_keys);
+	log_val($allowed_keys);
+	return $allowed_args;
+}
+
+/**
  * Resolve a variable to a post if possible.
  *
  * @uses get_post_by_slug
@@ -779,11 +803,12 @@ function get_image_id($image_url)
  * @param string $post_type The post-type slug, default is 'any'.
  * @return WP_Post|null
  */
-function get_post_by_slug($slug, $post_type = 'any')
+function get_post_by_slug($slug, $post_type = 'any', $post_status = "any")
 {
 	$posts = get_posts([
 		'name' => $slug,
 		'post_type' => $post_type,
+		'post_status' => $post_status,
 		'numberposts' => 1,
 	]);
 	return $posts[0] ?? null;
