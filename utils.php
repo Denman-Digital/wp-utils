@@ -663,17 +663,19 @@ function fallback_assign(&$subject, $validation_callback, ...$values)
 function parse_args($args, $defaults_and_allowed_keys = []): array
 {
 	$defaults = array_filter($defaults_and_allowed_keys, "is_string", ARRAY_FILTER_USE_KEY);
+	// Get allowed keys
 	$allowed_keys = [];
-	foreach ($args as $key => $value) {
-		if (is_string($key) && $key) {
+	foreach ($defaults_and_allowed_keys as $key => $value) {
+		if ( $key && is_string($key)) {
 			$allowed_keys[] = $key;
-		} else if (is_string($value) && $value) {
+		} else if ($value && is_string($value)) {
 			$allowed_keys[] = $value;
 		}
 	}
+	// Assign defaults
 	$parsed_args = wp_parse_args($args, $defaults);
+	// Limit to allowed keys
 	$allowed_args = array_include_keys($parsed_args, $allowed_keys);
-	log_val($allowed_keys);
 	return $allowed_args;
 }
 
