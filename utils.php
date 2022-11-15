@@ -690,7 +690,7 @@ function parse_args($args, $defaults_and_allowed_keys = []): array
 function resolve_post($post = null)
 {
 	if (empty($post)) {
-		return $GLOBALS['post'];
+		return $GLOBALS['post'] ?? null;
 	}
 	switch (gettype($post)) {
 		case 'integer': // Find by ID
