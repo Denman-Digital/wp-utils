@@ -1,7 +1,7 @@
 {
 	"name": "denman-digital/wp-utils",
 	"description": "PHP utilities for WordPress development.",
-	"version": "1.0.7",
+	"version": "1.1.0",
 	"type": "library",
 	"keywords": [
 		"WordPress",
@@ -18,7 +18,7 @@
 	],
 	"license": "MIT",
 	"require": {
-		"php": ">=7.3"
+		"php": ">=7.4"
 	},
 	"require-dev": {
 		"php-parallel-lint/php-console-highlighter": "^0.5.0",
