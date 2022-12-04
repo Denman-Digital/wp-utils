@@ -11,15 +11,28 @@ namespace Denman_Utils;
 use ArrayObject;
 use DateTime;
 use InvalidArgumentException;
+use WP_Post;
 use WP_Query;
+use WP_Term;
 
 defined('ABSPATH') || exit; // Exit if accessed directly.
+
+/**
+ * Dummy function that returns first argument.
+ * @since 1.0.0
+ * @param mixed $var
+ * @return mixed
+ */
+function pass_through(mixed $var): mixed
+{
+	return $var;
+}
 
 /**
  * Check if variable is not null.
  *
  * Since isset() is a PHP language construct, this wrapper allows us to call it using variable functions
- *
+ * @since 1.0.0
  * @param mixed $var
  * @return bool
  */
@@ -35,12 +48,12 @@ function not_empty($var): bool
 
 /**
  * Check whether string starts with substring.
- *
+ * @since 1.0.0
  * @param string $haystack String to search within.
  * @param string $needle String to search for.
  * @return boolean
  */
-function str_starts_with($haystack, $needle): bool
+function str_starts_with(string $haystack, string $needle): bool
 {
 	$length = strlen($needle);
 	if ($length == 0) {
@@ -51,12 +64,12 @@ function str_starts_with($haystack, $needle): bool
 
 /**
  * Check whether string ends with substring.
- *
+ * @since 1.0.0
  * @param string $haystack String to search within.
  * @param string $needle String to search for.
  * @return boolean
  */
-function str_ends_with($haystack, $needle)
+function str_ends_with(string $haystack, string $needle): bool
 {
 	$length = strlen($needle);
 	if ($length == 0) {
@@ -69,12 +82,12 @@ function str_ends_with($haystack, $needle)
  * Ensure that a string starts with a prefix.
  *
  * @uses str_starts_with
- *
+ * @since 1.0.0
  * @param string $str Subject.
  * @param string $prefix Substring to look for/prepend.
  * @return string
  */
-function str_prefix($str, $prefix)
+function str_prefix(string $str, string $prefix): string
 {
 	if (!str_starts_with($str, $prefix)) {
 		$str = $prefix . $str;
@@ -86,12 +99,12 @@ function str_prefix($str, $prefix)
  * Ensure that a string ends with a postfix
  *
  * @uses str_ends_with
- *
+ * @since 1.0.0
  * @param string $str Subject
  * @param string $postfix Substring to look for/append
  * @return string
  */
-function str_postfix($str, $postfix)
+function str_postfix(string $str, string $postfix): string
 {
 	if (!str_ends_with($str, $postfix)) {
 		$str .= $postfix;
@@ -104,12 +117,12 @@ function str_postfix($str, $postfix)
  *
  * @uses str_prefix
  * @uses str_postfix
- *
+ * @since 1.0.0
  * @param string $str Subject.
  * @param string $bookend Pre/postfix.
  * @return string
  */
-function str_bookend($str, $bookend)
+function str_bookend(string $str, string $bookend): string
 {
 	$bookend = (string) $bookend;
 	return str_prefix(str_postfix($str, $bookend), $bookend);
@@ -119,13 +132,13 @@ function str_bookend($str, $bookend)
  * Ensure that a string doesn't start with a prefix
  *
  * @uses str_starts_with
- *
+ * @since 1.0.0
  * @param string $str Subject.
  * @param string $prefix Substring to look for/remove from start.
  * @param int $max Optional. Max number of times to unperfix, <0 means no limit. Default -1.
  * @return string
  */
-function str_unprefix($str, $prefix, $max = -1)
+function str_unprefix(string $str, string $prefix, int $max = -1): string
 {
 	$max = $max >= 0 ? $max : -1;
 	$count = 0;
@@ -139,13 +152,13 @@ function str_unprefix($str, $prefix, $max = -1)
  * Ensure that a string doesn't end with a postfix
  *
  * @uses str_ends_with
- *
+ * @since 1.0.0
  * @param string $str Subject.
  * @param string $prefix Substring to look for/remove from end.
  * @param int $max Optional. Max number of times to unpostfix, <0 means no limit. Default -1.
  * @return string
  */
-function str_unpostfix($str, $postfix, $max = -1)
+function str_unpostfix(string $str, string $postfix, int $max = -1): string
 {
 	$max = $max >= 0 ? $max : -1;
 	$count = 0;
@@ -158,13 +171,13 @@ function str_unpostfix($str, $postfix, $max = -1)
 
 /**
  * Check for existance of substring within a string
- *
+ * @since 1.0.0
  * @param string $haystack String to search within.
  * @param string $needle String to search for.
- * @param boolean $case_insensitive Optional. Whether to ignore case when checking. Default false.
- * @return boolean
+ * @param bool $case_insensitive Optional. Whether to ignore case when checking. Default false.
+ * @return bool
  */
-function str_contains($haystack, $needle, $case_insensitive = false)
+function str_contains(string $haystack, string $needle, bool $case_insensitive = false): bool
 {
 	if ($case_insensitive) {
 		$haystack = strtolower($haystack);
@@ -175,14 +188,14 @@ function str_contains($haystack, $needle, $case_insensitive = false)
 
 /**
  * Truncate a string and append an indicator of truncation
- *
+ * @since 1.0.0
  * @param string $str String to truncate.
  * @param int $length Max length for $str before truncation occurs.
- * @param int|null $tolerance Optional. Tolerance for triggering truncation. Default 0.
- * @param string|null $after_truncate Optional. String to append after truncation. Default '...'.
+ * @param int $tolerance Optional. Tolerance for triggering truncation. Default 0.
+ * @param string $after_truncate Optional. String to append after truncation. Default '…'.
  * @return string
  */
-function str_truncate($str, $length, $tolerance = 0, $after_truncate = '...')
+function str_truncate(string $str, int $length, int $tolerance = 0, string $after_truncate = '…')
 {
 	if ($length && is_int($length) && $length < strlen($str) - abs($tolerance)) {
 		$str = trim(substr($str, 0, $length)) . $after_truncate;
@@ -191,15 +204,26 @@ function str_truncate($str, $length, $tolerance = 0, $after_truncate = '...')
 }
 
 /**
+ * Wrap a string with localized quotemarks
+ * @since 1.0.0
+ * @param string $str
+ * @return string
+ */
+function str_quote(string $str): string
+{
+	return _x("“", "opening quotemark") . $str . _x("”", "closing quotemark");
+}
+
+/**
  * Sprintf with named placeholders in `%name%` format
  *
  * @uses str_bookend
- *
+ * @since 1.0.0
  * @param string $format Format string.
  * @param string[]|object Array of search/replace pairs, or object with public non-static properties
  * @return string
  */
-function sprintf_keys($format, $pairs)
+function sprintf_keys(string $format, $pairs): string
 {
 	$pairs = is_object($pairs) ? get_object_vars($pairs) : $pairs;
 	if (!$pairs || !is_array($pairs)) {
@@ -213,13 +237,14 @@ function sprintf_keys($format, $pairs)
 
 /**
  * Re-key an array with a callback that returns new keys for each value
- *
+ * @since 1.0.0
  * @param callable $new_key_cb Callback function.
  * @param array $array Source array.
  * @param bool $key_first Optional. Whether the key should be the first parameter for the callback. Default true.
  * @param bool $value_scoped_cb Optional. Whether the callback provided is a non-static method of each value. Default false.
+ * @return array
  */
-function array_map_keys($new_key_cb, $array, $key_first = true, $value_scoped_cb = false)
+function array_map_keys(callable $new_key_cb, array $array, bool $key_first = true, bool $value_scoped_cb = false): array
 {
 	$output = [];
 	foreach ($array as $key => $value) {
@@ -236,12 +261,12 @@ function array_map_keys($new_key_cb, $array, $key_first = true, $value_scoped_cb
 
 /**
  * Remove empty values from array
- *
+ * @since 1.0.0
  * @param array $array The array to act upon.
  * @param boolean $null_only Optional. Whether to strictly compare to null. Default false.
  * @return array
  */
-function array_clear_empty($array, $null_only = false)
+function array_clear_empty(array $array, bool $null_only = false): array
 {
 	return array_values(array_filter($array, function ($value) use ($null_only) {
 		return $null_only && !is_null($value) || !empty($value);
@@ -250,12 +275,12 @@ function array_clear_empty($array, $null_only = false)
 
 /**
  * Assert a value as an array. If not an array or ArrayObject, will create new array with $value as contents
- *
+ * @since 1.0.0
  * @param mixed $value Value to assert.
  * @param bool $wrap_null Optional. Whether to wrap null values in an array. Default false.
  * @return array
  */
-function assert_array($value, $wrap_null = false)
+function assert_array($value, bool $wrap_null = false): array
 {
 	if (is_array($value)) {
 		return $value;
@@ -270,12 +295,12 @@ function assert_array($value, $wrap_null = false)
 
 /**
  * Remove an item from an array, returning the item
- *
+ * @since 1.0.0
  * @param array $array Source array.
  * @param string|int $key Key to remove and return value.
  * @return mixed|void
  */
-function array_pluck(&$array, $key)
+function array_pluck(array &$array, $key): mixed
 {
 	if (!is_array($array) || !array_key_exists($key, $array)) {
 		return;
@@ -288,14 +313,14 @@ function array_pluck(&$array, $key)
 /**
  * Returns only array entries whose keys are listed in an inclusion list.
  *
+ * @since 1.0.0
  * @uses resolve_arglist
  * @uses array_flatten
- *
  * @param array $array Original array to operate on.
  * @param array ...$included_keys Keys or arrays of keys you want to keep.
  * @return array
  */
-function array_include_keys($array, ...$included_keys)
+function array_include_keys(array $array, ...$included_keys): array
 {
 	$included_keys = array_flatten(resolve_arglist($included_keys));
 	return array_intersect_key($array, array_flip($included_keys));
@@ -304,14 +329,14 @@ function array_include_keys($array, ...$included_keys)
 /**
  * Returns only array entries whose keys are not listed in an exclusion list.
  *
+ * @since 1.0.0
  * @uses resolve_arglist
  * @uses array_flatten
- *
  * @param array $array Original array to operate on.
  * @param array ...$excluded_keys Keys or arrays of keys you want to remove.
  * @return array
  */
-function array_exclude_keys($array, ...$excluded_keys)
+function array_exclude_keys(array $array, ...$excluded_keys): array
 {
 	$excluded_keys = array_flatten(resolve_arglist($excluded_keys));
 	return array_diff_key($array, array_flip($excluded_keys));
@@ -321,11 +346,11 @@ function array_exclude_keys($array, ...$excluded_keys)
  * Flatten nested arrays.
  *
  * * Returns only array values, keys are lost
- *
+ * @since 1.0.0
  * @param array[]|mixed[] $array Array containing arrays
  * @return mixed[]
  */
-function array_flatten($array)
+function array_flatten(array $array): array
 {
 	$array = array_values($array);
 	$output = [];
@@ -342,13 +367,13 @@ function array_flatten($array)
 /**
  * Get the nth value in an array. Returns nothing if $array is empty or not an array.
  *
+ * @since 1.0.0
  * @uses min_max
- *
  * @param mixed[] $array
  * @param int $n Position to retrieve value from. If negative, counts back from end of array. WIll not overflow array bounds.
  * @return mixed|void
  */
-function array_nth($array, $n)
+function array_nth(array $array, int $n): mixed
 {
 	if (!is_array($array)) {
 		return;
@@ -364,13 +389,13 @@ function array_nth($array, $n)
 if (!function_exists('array_some')) {
 	/**
 	 * Check if any entry in an array satisfies the callback.
-	 *
+	 * @since 1.0.0
 	 * @param array $array
 	 * @param callable $callback Validation callback.
 	 * @param int $callback_args_count Optional. Number of arguments to pass to $callback. Default and maximum is 3.
 	 * @return bool
 	 */
-	function array_some($array, $callback, $callback_args_count = 3)
+	function array_some(array $array, callable $callback, int $callback_args_count = 3): bool
 	{
 		foreach ($array as $key => $value) {
 			if (call_user_func_array($callback, array_slice([$value, $key, $array], 0, $callback_args_count))) {
@@ -384,13 +409,13 @@ if (!function_exists('array_some')) {
 if (!function_exists('array_find')) {
 	/**
 	 * Get the first entry in an array that satisfies the callback.
-	 *
+	 * @since 1.0.0
 	 * @param array $array
 	 * @param callable $callback Validation callback. Is passed the value, key, and full array for each entry checked.
 	 * @param int $callback_args_count Optional. Number of arguments to pass to $callback. Default and maximum is 3.
 	 * @return mixed|void
 	 */
-	function array_find($array, $callback, $callback_args_count = 3)
+	function array_find(array $array, callable $callback, int $callback_args_count = 3): mixed
 	{
 		foreach ($array as $key => $value) {
 			if (call_user_func_array($callback, array_slice([$value, $key, $array], 0, $callback_args_count))) {
@@ -401,12 +426,148 @@ if (!function_exists('array_find')) {
 }
 
 /**
- * Resolves an array with only one value that is a non empty array
+ * Use array_merge_recursive to concatenate arrays
+ * Arguments will be cast to arrays
+ * @since 1.0.0
+ * @return array
+ */
+function array_concat($array, ...$additions): array
+{
+	$arrays = array_map(function ($value) {
+		return (array) $value;
+	}, $additions);
+	array_unshift($arrays, (array) $array);
+	return call_user_func_array("array_merge_recursive", $arrays);
+}
+
+/**
+ * Create an array where keys & values are parallel.
+ * @since 1.0.0
+ * @param array $array
+ * @return array
+ */
+function array_parallel(array $array): array
+{
+	return array_combine($array, $array);
+}
+
+/**
+ * Force an array to be associative, replacing numerical indices with the associated value.
+ * @since 1.0.0
+ * @param array $array
+ * @return array
+ */
+function array_force_assoc(array $array): array
+{
+	$values = array_values($array);
+	$keys = array_map(function ($key) use ($array) {
+		return is_numeric($key) ? $array[$key] : $key;
+	}, array_keys($array));
+	return array_combine($keys, $values);
+}
+
+/**
+ * Check whether an array has string keys
+ * @since 1.1.0
+ * @param array $array
+ * @return bool
+ */
+function array_has_string_keys(array $array): bool
+{
+	return count(array_filter(array_keys($array), 'is_string')) > 0;
+}
+
+/**
+ * Get the an adjacent key in an array. Returns null if $array is empty, not an array, or the key is not set.
  *
+ * @since 1.1.0
+ * @throws LengthException
+ * @param mixed[] $array
+ * @param string|int $key Key to look adjacent to.
+ * @param int $adjacence Desired position relative to the position of $key.
+ * @return mixed|void
+ */
+function array_key_adjacent(array $array, mixed $key, int $adjacence)
+{
+	if (!is_array($array)) {
+		return;
+	}
+	$length = count($array);
+	if (!$length) {
+		return;
+	}
+	$keys = array_keys($array);
+	$start_n = array_search($key, $keys, true);
+	if ($start_n === false) {
+		return;
+	}
+	return $keys[$start_n + $adjacence] ?? null;
+}
+
+/**
+ * Map an array of objects to just the required properties.
+ *
+ * @see unwrap
+ * @since 1.0.0
+ * @param object[] $objects Array of objects.
+ * @param string[]|string $props Object properties to keep.
+ * @param string $key_var Optional. Property to use as key in the final array.
+ * @return array[]
+ */
+function array_object_vars(array $objects, mixed $props, string $key_var = ""): array
+{
+	$objects = (array) $objects;
+	$props = unwrap($props);
+	$output = [];
+	foreach ($objects as $key => $object) {
+		if (!empty($key_var) && property_exists($object, $key_var)) {
+			$key = $object->$key_var;
+		}
+		if (is_array($props)) {
+			$vars = [];
+			foreach ($props as $prop) {
+				if (property_exists($object, $prop)) {
+					$vars[$prop] = $object->$prop;
+				}
+			}
+		} else {
+			if (property_exists($object, $props)) {
+				$vars = $object->$props;
+			}
+		}
+		$output[$key] = $vars;
+	}
+	return $output;
+}
+
+/**
+ * Unwrap single value arrays.
+ *
+ * Will recursively unwrap single-value arrays until left with either a single
+ * non-array value, or an array with 0 or 2+ values.
+ * @since 1.0.0
+ * @param mixed[]|mixed $array Array to potentially unwrap.
+ * @param int $limit Optional. Max number of layers to unwrap. Default -1 (no limit).
+ * @return mixed
+ */
+function unwrap(mixed $array, int $limit = -1): mixed
+{
+	$limit = max($limit, -1);
+	$count = 0;
+	while ($count != $limit && is_array($array) && count($array) === 1) {
+		$array = $array[0];
+		$count += 1;
+	}
+	return $array;
+}
+
+/**
+ * Resolves an array with only one value that is a non empty array
+ * @since 1.0.0
  * @param array[] $arglist
  * @return array
  */
-function resolve_arglist($arglist)
+function resolve_arglist(array $arglist): array
 {
 	if ($arglist[0] && count($arglist) == 1 && is_array($arglist[0])) {
 		$arglist = array_values($arglist[0]);
@@ -415,13 +576,39 @@ function resolve_arglist($arglist)
 }
 
 /**
+ * Like wp_parse_args, but limits results to keys defined in 2nd parameter.
+ * @since 1.0.5
+ * @param string|array|object $args Arguments to parse.
+ * @param array $defaults_and_allowed_keys Default values and allowed keys.
+ * @return array
+ */
+function parse_args(mixed $args, array $defaults_and_allowed_keys = []): array
+{
+	$defaults = array_filter($defaults_and_allowed_keys, "is_string", ARRAY_FILTER_USE_KEY);
+	// Get allowed keys
+	$allowed_keys = [];
+	foreach ($defaults_and_allowed_keys as $key => $value) {
+		if ($key && is_string($key)) {
+			$allowed_keys[] = $key;
+		} else if ($value && is_string($value)) {
+			$allowed_keys[] = $value;
+		}
+	}
+	// Assign defaults
+	$parsed_args = wp_parse_args($args, $defaults);
+	// Limit to allowed keys
+	$allowed_args = array_include_keys($parsed_args, $allowed_keys);
+	return $allowed_args;
+}
+
+/**
  * Compare 2 values exactly
- *
+ * @since 1.0.0
  * @param mixed $a
  * @param mixed $b
  * @return int
  */
-function compare_exact($a, $b)
+function compare_exact($a, $b): int
 {
 	if ($a === $b) {
 		return 0;
@@ -433,11 +620,11 @@ function compare_exact($a, $b)
 
 /**
  * Get the value of a numeric string.
- *
+ * @since 1.0.0
  * @param string $numeric_str
  * @return float|int
  */
-function numval($numeric_str)
+function numval(string $numeric_str): mixed
 {
 	if (!defined('LOCALE_DECIMAL_POINT') && ($dec = localeconv()['decimal_point'])) {
 		define('LOCALE_DECIMAL_POINT', $dec);
@@ -447,43 +634,38 @@ function numval($numeric_str)
 
 /**
  * Clamp a number to between min and max values
- *
- * @param float $num Value to be clamped.
- * @param float $min Minimum value.
- * @param float $max Maximum value.
- * @return float
+ * @since 1.0.0
+ * @param float|int $num Value to be clamped.
+ * @param float|int $min Minimum value.
+ * @param float|int $max Maximum value.
+ * @return float|int
  */
-function min_max($num, $min, $max)
+function min_max($num, $min, $max): mixed
 {
 	return max(min($num, $max), $min);
 }
 
-// function constrain($num, $min, $max)
-// {
-//     return $num < $max && $num > $min;
-// }
-
 /**
  * Get contents of current output buffer and clear without turning buffer off.
- *
- * @return string|boolean
+ * @since 1.0.0
+ * @return string
  */
-function ob_get_refresh()
+function ob_get_refresh(): string
 {
 	$contents = ob_get_contents();
-	ob_clean();
-	return $contents;
+	if ($contents !== false) ob_clean();
+	return $contents ?: "";
 }
 
 /**
  * Get the buffered output of a callback
- *
+ * @since 1.0.0
  * @param callable $output_fn Function to buffer.
  * @param array $args Optional. Arguments for output function.
  * @param boolean $output_only Optional. Return only buffered output. Default true.
  * @return string|mixed[]
  */
-function ob_return($output_fn, $args = [], $output_only = true)
+function ob_return(callable $output_fn, array $args = [], bool $output_only = true): mixed
 {
 	if (!is_callable($output_fn)) {
 		return '';
@@ -499,10 +681,9 @@ function ob_return($output_fn, $args = [], $output_only = true)
  * Args are available in the template as $template_args array.
  * Based on Humanmade's hm_get_template_part().
  *
- * @global $post
- *
+ * @since 1.0.0
  * @uses resolve_post() to resolve $template_args["post"].
- *
+ * @global $post
  * @param string[]|string $path Path(s) to template file. If passed an array of strings, it will treat attempt to join them with hyphens into a single path. If no such file can be found, it will try again iteratively, dropping the last piece until a valid file can be found.
  * @param mixed[]|object|string $template_args Optional. wp_args style argument list, with some special keys. Default empty array.
  * @param bool $template_args["set_post_data"] Setup post data for the template
@@ -577,8 +758,8 @@ function get_template_part_with($path, $template_args = [], $cache_args = [])
 
 /**
  * Write to the debug log when unable to use var_dump()
- *
- * @param mixed ...$values - a series of values
+ * @since 1.0.0
+ * @param mixed ...$values A series of values
  */
 function log_val(...$values)
 {
@@ -589,12 +770,12 @@ function log_val(...$values)
  * Returns the first truthy argument, or the last argument.
  * * If passed a single non-empty Array, will return the first truthy value, or the last entry.
  *
+ * @since 1.0.0
  * @uses resolve_arglist
- *
- * @param mixed[]|mixed ...$values - a series or array of values
+ * @param mixed[]|mixed ...$values A series or array of values
  * @return mixed
  */
-function fallback(...$values)
+function fallback(mixed ...$values): mixed
 {
 	$values = resolve_arglist($values);
 	foreach ($values as $result) {
@@ -607,15 +788,15 @@ function fallback(...$values)
 
 /**
  * Returns the first argument that passes a validation callback, or the last argument.
- * * If passed a single non-empty Array, will return the first truthy value, or the last entry.
+ * * If passed a single non-empty Array, will return the first valid value, or the last entry.
  *
+ * @since 1.0.0
  * @throws InvalidArgumentException if $validation_callback is not callable
- *
  * @param callable $validation_callback
  * @param mixed[]|mixed ...$values
  * @return mixed
  */
-function fallback_until($validation_callback, ...$values)
+function fallback_until(callable $validation_callback, mixed ...$values): mixed
 {
 	if (!is_callable($validation_callback)) {
 		throw new InvalidArgumentException("First argument in fallback_until() was not callable");
@@ -631,13 +812,14 @@ function fallback_until($validation_callback, ...$values)
 
 /**
  * Pass a variable to a validation callback, assigning the first passing fallback value if it fails.
- * * If passed a single non-empty Array, will return the first truthy value, or the last entry.
+ * * If passed a single non-empty Array, will return the first valid value, or the last entry.
  *
+ * @since 1.0.0
  * @param mixed $subject Variable to test/override. Passed by reference.
  * @param callable $validation_callback Validates $subject and $values by the truthiness of the return value.
  * @param mixed[]|mixed ...$values Fallback variables. If none pass the validation callback, the last will be used.
  */
-function fallback_assign(&$subject, $validation_callback, ...$values)
+function fallback_assign(mixed &$subject, callable $validation_callback, mixed ...$values): void
 {
 	if (!is_callable($validation_callback)) {
 		trigger_error("First argument in validate() was not callable");
@@ -654,36 +836,35 @@ function fallback_assign(&$subject, $validation_callback, ...$values)
 }
 
 /**
- * Like wp_parse_args, but limits results to keys defined in 2nd parameter.
- *
- * @param string|array|object $args Arguments to parse.
- * @param array $defaults_and_allowed_keys Default values and allowed keys.
- * @return array
+ * Run a series of callbacks until one returns a value that satisfies the validation callback, returning that value.
+ * * Returns either the first valid result, or the result of the last callback.
+ * @since 1.0.0
+ * @param callable $validation_callback
+ * @param callable[]|callable $progressive_callbacks
+ * @return mixed
  */
-function parse_args($args, $defaults_and_allowed_keys = []): array
+function fallback_progression(callable $validation_callback, callable ...$progressive_callbacks): mixed
 {
-	$defaults = array_filter($defaults_and_allowed_keys, "is_string", ARRAY_FILTER_USE_KEY);
-	// Get allowed keys
-	$allowed_keys = [];
-	foreach ($defaults_and_allowed_keys as $key => $value) {
-		if ( $key && is_string($key)) {
-			$allowed_keys[] = $key;
-		} else if ($value && is_string($value)) {
-			$allowed_keys[] = $value;
+	if (!is_callable($validation_callback)) {
+		trigger_error("First argument in validate() was not callable");
+		return;
+	}
+	$progressive_callbacks = array_filter(resolve_arglist($progressive_callbacks), "is_callable");
+	$result = null;
+	foreach ($progressive_callbacks as $callback) {
+		$result = call_user_func($callback);
+		if (call_user_func($validation_callback, $result)) {
+			return $result;
 		}
 	}
-	// Assign defaults
-	$parsed_args = wp_parse_args($args, $defaults);
-	// Limit to allowed keys
-	$allowed_args = array_include_keys($parsed_args, $allowed_keys);
-	return $allowed_args;
+	return $result;
 }
 
 /**
  * Resolve a variable to a post if possible.
  *
  * @uses get_post_by_slug
- *
+ * @since 1.0.0
  * @param WP_Post|int|string $post Optional. Variable to be resolved to a post, by ID or slug.
  * @return WP_Post|null
  */
@@ -707,7 +888,7 @@ function resolve_post($post = null)
 
 /**
  * Resolve a variable to a taxonomy if possible.
- *
+ * @since 1.0.0
  * @param WP_Taxonomy|string $taxonomy Variable to be resolved to a taxonomy.
  * @return WP_Taxonomy|null
  */
@@ -722,12 +903,58 @@ function resolve_taxonomy($taxonomy)
 }
 
 /**
+ * Get the primary key value of a WordPress object
+ * @since 1.0.0
+ * @param WP_Post|WP_Term $obj
+ * @return int
+ */
+function resolve_object_id(Object $obj): int
+{
+	$id_props = ["ID", "term_id"];
+	foreach ($id_props as $prop) {
+		if (property_exists($obj, $prop)) {
+			return $obj->{$prop};
+		}
+	}
+	return 0;
+}
+
+/**
+ * Get a flat array of all descendants for a given post.
+ * @since 1.1.0
+ * @param WP_Post|int|string|null $post
+ * @param int $depth
+ * @param bool $check_post_type
+ * @return WP_Post[]
+ */
+function get_post_descendants($post = null, int $depth = -1, bool $check_post_type = true): array
+{
+	$post = resolve_post($post);
+	if ($check_post_type && !is_post_type_hierarchical($post->post_type)) {
+		return [];
+	}
+	$descendants = [];
+	$children = get_posts([
+		"post_type" => $post->post_type,
+		"post_parent" => $post->ID,
+		"posts_per_page" => -1
+	]);
+	foreach ($children as $child) {
+		$descendants[] = $child;
+		if ($depth !== 0) {
+			$descendants = array_merge($descendants, get_post_descendants($child, $depth - 1, false));
+		}
+	}
+	return $descendants;
+}
+
+/**
  * Retrieve from an array only (a) string keys for truthy values and (b) numerically indexed strings
- *
+ * @since 1.0.0
  * @param string[] $classes
  * @return string[]
  */
-function class_names($classes)
+function class_names(array $classes): array
 {
 	$class_names = [];
 	foreach ((array) $classes as $key => $value) {
@@ -749,10 +976,11 @@ function class_names($classes)
  *
  * Implodes arrays, replaces dots with spaces, escapes string for use as HTML attribute.
  *
+ * @since 1.0.0
  * @param string[]|string $class_list List of class names.
  * @return string
  */
-function resolve_class_list(...$class_list)
+function resolve_class_list(string ...$class_list): string
 {
 	$class_list = implode(' ', array_filter(array_flatten($class_list)));
 	return esc_attr(str_replace('.', ' ', $class_list));
@@ -766,10 +994,11 @@ function resolve_class_list(...$class_list)
  * * Keys with null values will be excluded from output.
  * * Non-string values will be passed through var_export
  *
+ * @since 1.0.0
  * @param mixed[] $attrs
  * @return string
  */
-function html_attrs($attrs)
+function html_attrs(array $attrs): string
 {
 	$attrs = array_map(function ($value) {
 		return fallback_until("is_string", $value, esc_attr(var_export($value, true)));
@@ -788,24 +1017,26 @@ function html_attrs($attrs)
 /**
  * Get the attachment id of an image from its url.
  *
+ * @since 1.0.0
  * @param string $image_url
- * @return int|null
+ * @return int
  */
-function get_image_id($image_url)
+function get_image_id(string $image_url): int
 {
 	global $wpdb;
 	$attachment = $wpdb->get_col($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE guid='%s';", $image_url));
-	return $attachment[0];
+	return $attachment[0] ?? 0;
 }
 
 /**
  * Get a post from its slug.
  *
+ * @since 1.0.0
  * @param string $slug The post slug.
  * @param string $post_type The post-type slug, default is 'any'.
  * @return WP_Post|null
  */
-function get_post_by_slug($slug, $post_type = 'any', $post_status = "any")
+function get_post_by_slug(string $slug, string $post_type = 'any', string $post_status = "any")
 {
 	$posts = get_posts([
 		'name' => $slug,
@@ -820,13 +1051,13 @@ function get_post_by_slug($slug, $post_type = 'any', $post_status = "any")
  * Join path segments with a slash
  * * strips extra slashes on segments
  *
+ * @since 1.0.0
  * @uses str_starts_with
  * @uses str_ends_with
- *
  * @param string[] $segments Array of path segments.
  * @return string
  */
-function join_path_segments($segments)
+function join_path_segments(array $segments): string
 {
 	$path = implode('/', array_map(function ($segment) {
 		return trim($segment, '/');
@@ -843,14 +1074,14 @@ function join_path_segments($segments)
 /**
  * Get the URI for a theme asset.
  *
+ * @since 1.0.0
  * @uses str_prefix
  * @uses resolve_arglist
  * @uses join_path_segments
- *
  * @param string[]|string ...$segments A series or array of path segments.
  * @return string
  */
-function get_asset_uri(...$segments)
+function get_asset_uri(string ...$segments): string
 {
 	$path = join_path_segments(resolve_arglist($segments));
 	return get_template_directory_uri() . str_prefix($path, '/');
@@ -859,14 +1090,14 @@ function get_asset_uri(...$segments)
 /**
  * Get the path for a theme asset file.
  *
+ * @since 1.0.0
  * @uses str_prefix
  * @uses resolve_arglist
  * @uses join_path_segments
- *
  * @param string[]|string ...$segments A series or array of path segments.
  * @return string
  */
-function get_asset_path(...$segments)
+function get_asset_path(string ...$segments): string
 {
 	$path = join_path_segments(resolve_arglist($segments));
 	return get_template_directory() . str_prefix($path, '/');
@@ -875,12 +1106,12 @@ function get_asset_path(...$segments)
 /**
  * Get the contents of a theme asset file.
  *
+ * @since 1.0.0
  * @uses get_asset_path
- *
  * @param string[]|string ...$segments A series or array of path segments.
  * @return string
  */
-function get_asset_contents(...$path_segments)
+function get_asset_contents(string ...$path_segments): string
 {
 	$path = get_asset_path(...$path_segments);
 	$contents = "";
@@ -898,11 +1129,11 @@ function get_asset_contents(...$path_segments)
  * Parse small subset of markdown to html.
  *
  * Includes: em & en dashes, bold, italic, inline code, links, paragraphs, and line-breaks.
- *
+ * @since 1.0.0
  * @param string $md Markdown content.
  * @return string Parsed HTML.
  */
-function mini_markdown_parse($md)
+function mini_markdown_parse(string $md): string
 {
 	return preg_replace(
 		[
@@ -935,11 +1166,11 @@ function mini_markdown_parse($md)
 
 /**
  * Strip the case of a string: no capitals, words separated by a single space.
- *
+ * @since 1.0.0
  * @param string $str
  * @return string
  */
-function strip_case($str)
+function strip_case(string $str): string
 {
 	return strtolower(trim(preg_replace(
 		[
@@ -960,11 +1191,11 @@ function strip_case($str)
  * Title case a string, i.e. This Text Is Titled.
  *
  * @uses strip_case
- *
+ * @since 1.0.0
  * @param string $str
  * @return string
  */
-function title_case($str)
+function title_case(string $str): string
 {
 	return ucwords(strip_case($str));
 }
@@ -973,11 +1204,11 @@ function title_case($str)
  * Sentence case a string, i.e. This text is sentenced.
  *
  * @uses strip_case
- *
+ * @since 1.0.0
  * @param string $str
  * @return string
  */
-function sentence_case($str)
+function sentence_case(string $str): string
 {
 	return ucfirst(strip_case($str));
 }
@@ -986,11 +1217,11 @@ function sentence_case($str)
  * Pascal case a string, i.e. ThisTextIsPacaled.
  *
  * @uses strip_case
- *
+ * @since 1.0.0
  * @param string $str
  * @return string
  */
-function pascal_case($str)
+function pascal_case(string $str): string
 {
 	return str_replace(' ', '', ucwords(strip_case($str)));
 }
@@ -999,11 +1230,11 @@ function pascal_case($str)
  * Snake case a string, i.e. this_text_is_snaked.
  *
  * @uses strip_case
- *
+ * @since 1.0.0
  * @param string $str
  * @return string
  */
-function snake_case($str)
+function snake_case(string $str): string
 {
 	return str_replace(' ', '_', strip_case($str));
 }
@@ -1012,11 +1243,11 @@ function snake_case($str)
  * Kebab case a string, i.e. this-text-is-kebabed.
  *
  * @uses strip_case
- *
+ * @since 1.0.0
  * @param string $str
  * @return string
  */
-function kebab_case($str)
+function kebab_case(string $str): string
 {
 	return str_replace(' ', '-', strip_case($str));
 }
@@ -1025,92 +1256,24 @@ function kebab_case($str)
  * Camel case a string, i.e. thisTextIsCameled.
  *
  * @uses pascal_case
- *
+ * @since 1.0.0
  * @param string $str
  * @return string
  */
-function camel_case($str)
+function camel_case(string $str): string
 {
 	return lcfirst(pascal_case($str));
-}
-
-/**
- * Dummy function that returns first argument.
- *
- * @param mixed $var
- * @return mixed
- */
-function pass_through($var)
-{
-	return $var;
-}
-
-/**
- * Map an array of objects to just the required properties.
- *
- * @see unwrap
- *
- * @param object[] $objects Array of objects.
- * @param string[]|string $props Object properties to keep.
- * @param string $key_var Optional. Property to use as key in the final array.
- * @return array[]
- */
-function array_object_vars($objects, $props, $key_var = null)
-{
-	$objects = (array) $objects;
-	$props = unwrap($props);
-	$output = [];
-	foreach ($objects as $key => $object) {
-		if (!empty($key_var) && property_exists($object, $key_var)) {
-			$key = $object->$key_var;
-		}
-		if (is_array($props)) {
-			$vars = [];
-			foreach ($props as $prop) {
-				if (property_exists($object, $prop)) {
-					$vars[$prop] = $object->$prop;
-				}
-			}
-		} else {
-			if (property_exists($object, $props)) {
-				$vars = $object->$props;
-			}
-		}
-		$output[$key] = $vars;
-	}
-	return $output;
-}
-
-/**
- * Unwrap single value arrays.
- *
- * Will recursively unwrap single-value arrays until left with either a single
- * non-array value, or an array with 0 or 2+ values.
- *
- * @param mixed[]|mixed $array Array to potentially unwrap.
- * @param int $limit Optional. Max number of layers to unwrap. Default -1 (no limit).
- * @return mixed
- */
-function unwrap($array, $limit = -1)
-{
-	$limit = max($limit, -1);
-	$count = 0;
-	while ($count != $limit && is_array($array) && count($array) === 1) {
-		$array = $array[0];
-		$count += 1;
-	}
-	return $array;
 }
 
 /** Get an array of registered public custom taxonomies.
  *
  * * Be sure to only call AFTER your custom taxonomies have been registered
  * * Taxonomies MUST have been registered with ['public' => true]
- *
+ * @since 1.0.0
  * @param string[]|string $exclude Optional. Taxonomy slug(s) to exclude.
  * @return WP_Taxonomy[]
  */
-function get_custom_taxonomies($exclude = null)
+function get_custom_taxonomies($exclude = ''): array
 {
 	return array_exclude_keys(
 		get_taxonomies(
@@ -1126,11 +1289,11 @@ function get_custom_taxonomies($exclude = null)
  *
  * * Be sure to only call AFTER your custom post types have been registered
  * * Post types MUST have been registered with ['public' => true]
- *
+ * @since 1.0.0
  * @param string[]|string $exclude Optional. Post type slug(s) to exclude.
  * @return WP_Post_Type[]
  */
-function get_custom_post_types($exclude = null)
+function get_custom_post_types($exclude = ""): array
 {
 	return array_exclude_keys(
 		get_post_types(
@@ -1146,12 +1309,12 @@ function get_custom_post_types($exclude = null)
 
 /**
  * Get a string representation of elapsed time.
- *
+ * @since 1.0.0
  * @param int $datetime Unix timestamp.
  * @param bool $full Optional. Whether to output all non-zero time divisions or just the largest. Default false.
  * @return string
  */
-function time_elapsed_string($datetime, $full = false)
+function time_elapsed_string(mixed $datetime, bool $full = false): string
 {
 	$now = new DateTime;
 	$ago = new DateTime($datetime);
@@ -1183,38 +1346,87 @@ function time_elapsed_string($datetime, $full = false)
 	return $string ? implode(', ', $string) . ' ago' : 'just now';
 }
 
-function preserve_newlines($str)
+/**
+ * Convert newline characters to <br> tags
+ * @since 1.0.0
+ * @param string $str
+ * @return string
+ */
+function preserve_newlines(string $str): string
 {
 	return preg_replace("/\R/", "<br>", $str);
 }
 
+/**
+ * Undo WordPress' automatic <p> tagging.
+ * @since 1.0.0
+ * @param string $str
+ * @return string
+ */
+function reverse_wpautop(string $str): string
+{
+	//remove any new lines already in there
+	$str = str_replace("\n", "", $str);
+	//remove all <p>
+	$str = str_replace("<p>", "", $str);
+	//replace <br /> with \n
+	$str = str_replace(array("<br />", "<br>", "<br/>"), "\n", $str);
+	//replace </p> with \n\n
+	$str = str_replace("</p>", "\n\n", $str);
+	return $str;
+}
+
+/**
+ * Check for either of the "read more" tags within a post's content.
+ * @since 1.1.0
+ * @param WP_Post|int|string|null $post Optional. Post the check content, defaults to current post.
+ * @return bool
+ */
+function has_read_more_tag($post = null): bool
+{
+	$post = resolve_post($post);
+	return $post && (has_block("wp:more", $post) || preg_match("/<!--more(.*?)?-->/", $post->post_content));
+}
+
+/**
+ * Given an array of blocks, append any contained Inner Blocks.
+ * @since 1.1.0
+ * @param WP_Block[] $blocklist
+ * @return WP_Block[]
+ */
+function flatten_blocklist(array $blocklist): array
+{
+	return array_reduce($blocklist, function ($carry, $item) {
+		$carry[] = $item;
+		if (!empty($item["innerBlocks"])) {
+			$carry = array_merge($carry, flatten_blocklist($item["innerBlocks"]));
+		}
+		return $carry;
+	}, []);
+}
+
 if (!function_exists('esc_regex')) {
-	function esc_regex($str)
+	/**
+	 * Escape a regex string
+	 * @since 1.0.0
+	 * @param string $str
+	 * @return string
+	 */
+	function esc_regex(string $str): string
 	{
 		return preg_replace('/([^\w])/', '\\\$0', $str);
 	}
 }
 
 /**
- * Wrap a string with localized quotemarks
- *
- * @param string $str
- * @return string
- */
-function str_quote($str)
-{
-	return _x("“", "opening quotemark") . $str . _x("”", "closing quotemark");
-}
-
-/**
  * Return a function that only runs if a global flag is falsey.
- *
+ * @since 1.0.0
  * @param string $flag_name - Name of flag variable in the global scope.
  * @param callable $callable - Callable to execute if flag is falsey.
  * @param bool $is_filter - Optional. If true, and flag prevents execution, return the first supplied argument when the returned function is called. Default false.
- * @return function
+ * @return callable
  */
-function flag_block($flag_name, $callable, $is_filter = false)
+function flag_block(string $flag_name, callable $callable, bool $is_filter = false): callable
 {
 	return function (...$args) use ($callable, $flag_name, $is_filter) {
 		if (!empty($GLOBALS[$flag_name])) {
@@ -1229,13 +1441,13 @@ function flag_block($flag_name, $callable, $is_filter = false)
 
 /**
  * Return a function that only runs if a global flag is truthy.
- *
+ * @since 1.0.0
  * @param string $flag_name - Name of flag variable in the global scope.
  * @param callable $callable - Callable to execute if flag is falsey.
  * @param bool $is_filter - Optional. If true, and flag prevents execution, return the first supplied argument when the returned function is called. Default false.
- * @return function
+ * @return callable
  */
-function flag_pass($flag_name, $callable, $is_filter = false)
+function flag_pass(string $flag_name, callable $callable, bool $is_filter = false): callable
 {
 	return function (...$args) use ($callable, $flag_name, $is_filter) {
 		if (empty($GLOBALS[$flag_name])) {
@@ -1249,61 +1461,14 @@ function flag_pass($flag_name, $callable, $is_filter = false)
 }
 
 /**
- * Use array_merge_recursive to concatenate arrays
- * Arguments will be cast to arrays
- *
- * @return array
- */
-function array_concat($array, ...$additions)
-{
-	$arrays = array_map(function ($value) {
-		return (array) $value;
-	}, $additions);
-	array_unshift($arrays, (array) $array);
-	return call_user_func_array("array_merge_recursive", $arrays);
-}
-
-
-function fallback_progression($validation_callback, ...$progressive_callbacks)
-{
-	if (!is_callable($validation_callback)) {
-		trigger_error("First argument in validate() was not callable");
-		return;
-	}
-	$progressive_callbacks = array_filter(resolve_arglist($progressive_callbacks), "is_callable");
-	foreach ($progressive_callbacks as $callback) {
-		$result = call_user_func($callback);
-		if (call_user_func($validation_callback, $result)) {
-			return $result;
-		}
-	}
-}
-
-/**
- * Get the primary key value of a WordPress object
- *
- * @param Object $obj
- * @return int
- */
-function resolve_object_id($obj)
-{
-	$id_props = ["ID", "term_id"];
-	foreach ($id_props as $prop) {
-		if (property_exists($obj, $prop)) {
-			return $obj->{$prop};
-		}
-	}
-	return 0;
-}
-
-/**
  * Return a copy of a function with some arguments prefilled.
  *
+ * @since 1.0.0
  * @param callable $callable - The function/method to prefill.
  * @param mixed $args - Arguments to prefill in the order supplied.
- * @return function
+ * @return callable
  */
-function prefill($callable, ...$args)
+function prefill(callable $callable, mixed ...$args): callable
 {
 	return function () use ($callable, $args) {
 		return call_user_func_array($callable, array_merge($args, func_get_args()));
@@ -1314,7 +1479,7 @@ function prefill($callable, ...$args)
  * Try to make sure you have a desired amount of posts.
  *
  * @throws InvalidArgumentException if $posts is not an array or WP_Query.
- *
+ * @since 1.0.0
  * @param WP_Post[]|WP_Query $posts - The posts you have already.
  * @param int $desired_post_count - The desired number of posts.
  * @param mixed[] $wp_query_args - Optional. The query args to look for posts to pad out your results.
@@ -1322,7 +1487,7 @@ function prefill($callable, ...$args)
  * @param boolean $exclude_global_post - Optional. Whether to exclude the current global $post from results. Default true.
  * @return WP_Post[]|WP_Query
  */
-function pad_posts($posts, $desired_post_count, $wp_query_args = [], $return_as_query = null, $exclude_global_post = true)
+function pad_posts($posts, int $desired_post_count, array $wp_query_args = [], mixed $return_as_query = null, $exclude_global_post = true)
 {
 	if (is_a($posts, "WP_Query")) {
 		$posts = $posts->posts;
@@ -1369,22 +1534,33 @@ function pad_posts($posts, $desired_post_count, $wp_query_args = [], $return_as_
 	return $posts;
 }
 
-function link_unless_singular($content_str, $extra_attr_str = "", $post = null)
+/**
+ * Wrap a string of content in a post permalink anchor tag HTML, unless the context is of a single post of that type.
+ * @since 1.0.0
+ * @param string $content_str
+ * @param string $extra_attr_str
+ * @param mixed $post
+ * @return string
+ */
+function link_unless_singular(string $content_str, string $extra_attr_str = "", mixed $post = null): string
 {
 	$post = resolve_post($post);
+
+	if (!$post || is_singular($post->post_type)) return $content_str;
+
 	$extra_attr_str = $extra_attr_str ? " $extra_attr_str" : "";
-	return is_singular($post->post_type) ? $content_str : sprintf("<a href=\"%s\"%s>%s</a>", get_the_permalink($post), $extra_attr_str, $content_str);
+	return sprintf("<a href=\"%s\"%s>%s</a>", esc_url(get_the_permalink($post)), $extra_attr_str, $content_str);
 }
 
 /**
  * Pass a value through any number of filter hooks sequentially.
  * Basically, short for apply_filters("hook2", apply_filters("hook1", $value))...
- *
+ * @since 1.0.0
  * @param string[] $hooks - Filter hooks.
  * @param mixed ...$args - Arguments for filters.
  * @return mixed
  */
-function apply_filters_sequence($hooks, ...$args)
+function apply_filters_sequence(array $hooks, mixed ...$args): mixed
 {
 	$hooks = array_filter($hooks, "has_filter");
 	$value = array_pop($args);
@@ -1395,12 +1571,12 @@ function apply_filters_sequence($hooks, ...$args)
 }
 
 /**
- * Pass a value through any number of filter hooks sequentially.
- *
- * @param string[] $hooks - Filter hooks.
- * @param mixed ...$args - Arguments for filters.
+ * Pass a value to any number of action hooks sequentially.
+ * @since 1.0.0
+ * @param string[] $hooks - Action hooks.
+ * @param mixed ...$args - Arguments for actions.
  */
-function do_actions_sequence($hooks, ...$args)
+function do_actions_sequence(array $hooks, mixed ...$args): void
 {
 	$hooks = array_filter($hooks, "has_action");
 	foreach ($hooks as $hook) {
@@ -1408,33 +1584,142 @@ function do_actions_sequence($hooks, ...$args)
 	}
 }
 
-function array_parallel($array)
+/**
+ * Get the domain of a URL.
+ * @since 1.1.0
+ * @param string $url
+ * @return string
+ */
+function get_domain_of_url(string $url): string
 {
-	return array_combine($array, $array);
+	return implode(".", array_slice(explode(".", parse_url($url)["host"]), -2));
 }
-
-function array_force_assoc($array)
-{
-	$values = array_values($array);
-	$keys = array_map(function ($key) use ($array) {
-		return is_numeric($key) ? $array[$key] : $key;
-	}, array_keys($array));
-	return array_combine($keys, $values);
-}
-
 
 /**
- * Undo WordPress' automatic <p> tagging.
+ * Check if a URL is (most likely) to go to an external resource.
+ * @since 1.1.0
+ * @param string $url
+ * @return bool
  */
-function reverse_wpautop($str)
+function is_link_external(string $url): bool
 {
-	//remove any new lines already in there
-	$str = str_replace("\n", "", $str);
-	//remove all <p>
-	$str = str_replace("<p>", "", $str);
-	//replace <br /> with \n
-	$str = str_replace(array("<br />", "<br>", "<br/>"), "\n", $str);
-	//replace </p> with \n\n
-	$str = str_replace("</p>", "\n\n", $str);
-	return $str;
+	$url_components = parse_url($url);
+	if (empty($url_components['host'])) return false;  // we will treat url like '/relative.php' as relative
+	$domain = get_domain_of_url(get_bloginfo("url"));
+	if (strcasecmp($url_components['host'], $domain) === 0) return false; // url host looks exactly like the local host
+	return strrpos(strtolower($url_components['host']), ".$domain") !== strlen($url_components['host']) - strlen(".$domain"); // check if the url host is a subdomain
+}
+
+/**
+ * Check if a URL is relative.
+ * @since 1.1.0
+ * @param string $url
+ * @return bool
+ */
+function is_link_relative(string $url): bool
+{
+	$url_components = parse_url($url);
+	return empty($url_components['host']);
+}
+
+/**
+ * Get an array of RGBA values from a hexidecimal color string.
+ * @since 1.1.0
+ * @param string $hex_color
+ * @param float $alpha_fallback
+ * @return array
+ */
+function hex_str_to_rgba_array(string $hex_color, float $alpha_fallback = 1.0): array
+{
+	$hex_color = trim(strtolower($hex_color));
+	if (str_starts_with($hex_color, "#")) {
+		$hex_color = substr($hex_color, 1);
+	}
+	$alpha = $alpha_fallback;
+	switch (strlen($hex_color)) {
+		case 8:
+			$alpha =  hexdec(substr($hex_color, 6, 2));
+		case 6:
+			$red = hexdec(substr($hex_color, 0, 2));
+			$green = hexdec(substr($hex_color, 2, 2));
+			$blue = hexdec(substr($hex_color, 4, 2));
+			return compact("red", "green", "blue", "alpha");
+		case 3:
+			$red = hexdec(str_repeat(substr($hex_color, 0, 1), 2));
+			$green = hexdec(str_repeat(substr($hex_color, 1, 1), 2));
+			$blue = hexdec(str_repeat(substr($hex_color, 2, 1), 2));
+			return compact("red", "green", "blue", "alpha");
+		default:
+			return [];
+	}
+}
+
+/**
+ * Get an array of RGBA values from an RGBA color string.
+ * @since 1.1.0
+ * @param string $hex_color
+ * @return array
+ */
+function rgba_str_to_rgba_array(string $rgba_str): array
+{
+	$rgba_str = trim(strtolower($rgba_str));
+	$matches = [];
+	if (preg_match("/rgba?\\(\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)\\s*(?:,\\s*([01]\\.?[0-9]*)\\s*)?\\)/", $rgba_str, $matches)) {
+		return [
+			"red" => $matches[1],
+			"green" => $matches[2],
+			"blue" => $matches[3],
+			"alpha" => $matches[4] ?? 1,
+		];
+	}
+	return [];
+}
+
+/**
+ * Get an approximation of the luma for an RGBA color.
+ * @since 1.1.0
+ * @param array|string $rgba
+ * @return int|float
+ */
+function rgba_to_luma(mixed $rgba)
+{
+	if (is_string($rgba)) {
+		$rgba = rgba_str_to_rgba_array($rgba);
+	}
+	extract($rgba);
+	return ($red * 2 + $blue + $green * 3) / 6;
+}
+
+/**
+ * Render and RGBA array to string.
+ * @since 1.1.0
+ * @param array $rgba_values
+ * @return string
+ */
+function render_rgba_array(array $rgba_values): string
+{
+	$red = $rgba_values["red"] ?? $rgba_values["r"] ?? 127;
+	$green = $rgba_values["green"] ?? $rgba_values["g"] ?? 127;
+	$blue = $rgba_values["blue"] ?? $rgba_values["b"] ?? 127;
+	$alpha = $rgba_values["alpha"] ?? $rgba_values["a"] ?? 1;
+	return sprintf("rgba(%d,%d,%d,%.3F)", $red, $green, $blue, $alpha);
+}
+
+/**
+ * Register Admin AJAX callbacks easily.
+ * @since 1.1.0
+ * @param string $action
+ * @param callable $generic_callback
+ * @param callable|null $logged_in_callback
+ * @return bool
+ */
+function register_ajax_callback(string $action, callable $generic_callback, mixed $logged_in_callback = null): bool
+{
+	if (!$action || !$generic_callback || !is_callable($generic_callback)) return false;
+	if (!$logged_in_callback || !is_callable($logged_in_callback)) {
+		$logged_in_callback = $generic_callback;
+	}
+	add_action("wp_ajax_nopriv_{$action}", $generic_callback);
+	add_action("wp_ajax_{$action}", $logged_in_callback);
+	return true;
 }
