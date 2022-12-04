@@ -23,7 +23,7 @@ defined('ABSPATH') || exit; // Exit if accessed directly.
  * @param mixed $var
  * @return mixed
  */
-function pass_through(mixed $var): mixed
+function pass_through($var)
 {
 	return $var;
 }
@@ -300,7 +300,7 @@ function assert_array($value, bool $wrap_null = false): array
  * @param string|int $key Key to remove and return value.
  * @return mixed|void
  */
-function array_pluck(array &$array, $key): mixed
+function array_pluck(array &$array, $key)
 {
 	if (!is_array($array) || !array_key_exists($key, $array)) {
 		return;
@@ -373,7 +373,7 @@ function array_flatten(array $array): array
  * @param int $n Position to retrieve value from. If negative, counts back from end of array. WIll not overflow array bounds.
  * @return mixed|void
  */
-function array_nth(array $array, int $n): mixed
+function array_nth(array $array, int $n)
 {
 	if (!is_array($array)) {
 		return;
@@ -415,7 +415,7 @@ if (!function_exists('array_find')) {
 	 * @param int $callback_args_count Optional. Number of arguments to pass to $callback. Default and maximum is 3.
 	 * @return mixed|void
 	 */
-	function array_find(array $array, callable $callback, int $callback_args_count = 3): mixed
+	function array_find(array $array, callable $callback, int $callback_args_count = 3)
 	{
 		foreach ($array as $key => $value) {
 			if (call_user_func_array($callback, array_slice([$value, $key, $array], 0, $callback_args_count))) {
@@ -487,7 +487,7 @@ function array_has_string_keys(array $array): bool
  * @param int $adjacence Desired position relative to the position of $key.
  * @return mixed|void
  */
-function array_key_adjacent(array $array, mixed $key, int $adjacence)
+function array_key_adjacent(array $array, $key, int $adjacence)
 {
 	if (!is_array($array)) {
 		return;
@@ -514,7 +514,7 @@ function array_key_adjacent(array $array, mixed $key, int $adjacence)
  * @param string $key_var Optional. Property to use as key in the final array.
  * @return array[]
  */
-function array_object_vars(array $objects, mixed $props, string $key_var = ""): array
+function array_object_vars(array $objects, $props, string $key_var = ""): array
 {
 	$objects = (array) $objects;
 	$props = unwrap($props);
@@ -550,7 +550,7 @@ function array_object_vars(array $objects, mixed $props, string $key_var = ""): 
  * @param int $limit Optional. Max number of layers to unwrap. Default -1 (no limit).
  * @return mixed
  */
-function unwrap(mixed $array, int $limit = -1): mixed
+function unwrap($array, int $limit = -1)
 {
 	$limit = max($limit, -1);
 	$count = 0;
@@ -582,7 +582,7 @@ function resolve_arglist(array $arglist): array
  * @param array $defaults_and_allowed_keys Default values and allowed keys.
  * @return array
  */
-function parse_args(mixed $args, array $defaults_and_allowed_keys = []): array
+function parse_args($args, array $defaults_and_allowed_keys = []): array
 {
 	$defaults = array_filter($defaults_and_allowed_keys, "is_string", ARRAY_FILTER_USE_KEY);
 	// Get allowed keys
@@ -624,7 +624,7 @@ function compare_exact($a, $b): int
  * @param string $numeric_str
  * @return float|int
  */
-function numval(string $numeric_str): mixed
+function numval(string $numeric_str)
 {
 	if (!defined('LOCALE_DECIMAL_POINT') && ($dec = localeconv()['decimal_point'])) {
 		define('LOCALE_DECIMAL_POINT', $dec);
@@ -640,7 +640,7 @@ function numval(string $numeric_str): mixed
  * @param float|int $max Maximum value.
  * @return float|int
  */
-function min_max($num, $min, $max): mixed
+function min_max($num, $min, $max)
 {
 	return max(min($num, $max), $min);
 }
@@ -665,7 +665,7 @@ function ob_get_refresh(): string
  * @param boolean $output_only Optional. Return only buffered output. Default true.
  * @return string|mixed[]
  */
-function ob_return(callable $output_fn, array $args = [], bool $output_only = true): mixed
+function ob_return(callable $output_fn, array $args = [], bool $output_only = true)
 {
 	if (!is_callable($output_fn)) {
 		return '';
@@ -775,7 +775,7 @@ function log_val(...$values)
  * @param mixed[]|mixed ...$values A series or array of values
  * @return mixed
  */
-function fallback(mixed ...$values): mixed
+function fallback(...$values)
 {
 	$values = resolve_arglist($values);
 	foreach ($values as $result) {
@@ -796,7 +796,7 @@ function fallback(mixed ...$values): mixed
  * @param mixed[]|mixed ...$values
  * @return mixed
  */
-function fallback_until(callable $validation_callback, mixed ...$values): mixed
+function fallback_until(callable $validation_callback, ...$values)
 {
 	if (!is_callable($validation_callback)) {
 		throw new InvalidArgumentException("First argument in fallback_until() was not callable");
@@ -819,7 +819,7 @@ function fallback_until(callable $validation_callback, mixed ...$values): mixed
  * @param callable $validation_callback Validates $subject and $values by the truthiness of the return value.
  * @param mixed[]|mixed ...$values Fallback variables. If none pass the validation callback, the last will be used.
  */
-function fallback_assign(mixed &$subject, callable $validation_callback, mixed ...$values): void
+function fallback_assign(&$subject, callable $validation_callback, ...$values): void
 {
 	if (!is_callable($validation_callback)) {
 		trigger_error("First argument in validate() was not callable");
@@ -843,7 +843,7 @@ function fallback_assign(mixed &$subject, callable $validation_callback, mixed .
  * @param callable[]|callable $progressive_callbacks
  * @return mixed
  */
-function fallback_progression(callable $validation_callback, callable ...$progressive_callbacks): mixed
+function fallback_progression(callable $validation_callback, ...$progressive_callbacks)
 {
 	if (!is_callable($validation_callback)) {
 		trigger_error("First argument in validate() was not callable");
@@ -980,7 +980,7 @@ function class_names(array $classes): array
  * @param string[]|string $class_list List of class names.
  * @return string
  */
-function resolve_class_list(string ...$class_list): string
+function resolve_class_list(...$class_list): string
 {
 	$class_list = implode(' ', array_filter(array_flatten($class_list)));
 	return esc_attr(str_replace('.', ' ', $class_list));
@@ -1081,7 +1081,7 @@ function join_path_segments(array $segments): string
  * @param string[]|string ...$segments A series or array of path segments.
  * @return string
  */
-function get_asset_uri(string ...$segments): string
+function get_asset_uri(...$segments): string
 {
 	$path = join_path_segments(resolve_arglist($segments));
 	return get_template_directory_uri() . str_prefix($path, '/');
@@ -1097,7 +1097,7 @@ function get_asset_uri(string ...$segments): string
  * @param string[]|string ...$segments A series or array of path segments.
  * @return string
  */
-function get_asset_path(string ...$segments): string
+function get_asset_path(...$segments): string
 {
 	$path = join_path_segments(resolve_arglist($segments));
 	return get_template_directory() . str_prefix($path, '/');
@@ -1111,7 +1111,7 @@ function get_asset_path(string ...$segments): string
  * @param string[]|string ...$segments A series or array of path segments.
  * @return string
  */
-function get_asset_contents(string ...$path_segments): string
+function get_asset_contents(...$path_segments): string
 {
 	$path = get_asset_path(...$path_segments);
 	$contents = "";
@@ -1314,7 +1314,7 @@ function get_custom_post_types($exclude = ""): array
  * @param bool $full Optional. Whether to output all non-zero time divisions or just the largest. Default false.
  * @return string
  */
-function time_elapsed_string(mixed $datetime, bool $full = false): string
+function time_elapsed_string($datetime, bool $full = false): string
 {
 	$now = new DateTime;
 	$ago = new DateTime($datetime);
@@ -1468,7 +1468,7 @@ function flag_pass(string $flag_name, callable $callable, bool $is_filter = fals
  * @param mixed $args - Arguments to prefill in the order supplied.
  * @return callable
  */
-function prefill(callable $callable, mixed ...$args): callable
+function prefill(callable $callable, ...$args): callable
 {
 	return function () use ($callable, $args) {
 		return call_user_func_array($callable, array_merge($args, func_get_args()));
@@ -1487,7 +1487,7 @@ function prefill(callable $callable, mixed ...$args): callable
  * @param boolean $exclude_global_post - Optional. Whether to exclude the current global $post from results. Default true.
  * @return WP_Post[]|WP_Query
  */
-function pad_posts($posts, int $desired_post_count, array $wp_query_args = [], mixed $return_as_query = null, $exclude_global_post = true)
+function pad_posts($posts, int $desired_post_count, array $wp_query_args = [], $return_as_query = null, $exclude_global_post = true)
 {
 	if (is_a($posts, "WP_Query")) {
 		$posts = $posts->posts;
@@ -1542,7 +1542,7 @@ function pad_posts($posts, int $desired_post_count, array $wp_query_args = [], m
  * @param mixed $post
  * @return string
  */
-function link_unless_singular(string $content_str, string $extra_attr_str = "", mixed $post = null): string
+function link_unless_singular(string $content_str, string $extra_attr_str = "", $post = null): string
 {
 	$post = resolve_post($post);
 
@@ -1560,7 +1560,7 @@ function link_unless_singular(string $content_str, string $extra_attr_str = "", 
  * @param mixed ...$args - Arguments for filters.
  * @return mixed
  */
-function apply_filters_sequence(array $hooks, mixed ...$args): mixed
+function apply_filters_sequence(array $hooks, ...$args)
 {
 	$hooks = array_filter($hooks, "has_filter");
 	$value = array_pop($args);
@@ -1576,7 +1576,7 @@ function apply_filters_sequence(array $hooks, mixed ...$args): mixed
  * @param string[] $hooks - Action hooks.
  * @param mixed ...$args - Arguments for actions.
  */
-function do_actions_sequence(array $hooks, mixed ...$args): void
+function do_actions_sequence(array $hooks, ...$args): void
 {
 	$hooks = array_filter($hooks, "has_action");
 	foreach ($hooks as $hook) {
@@ -1681,7 +1681,7 @@ function rgba_str_to_rgba_array(string $rgba_str): array
  * @param array|string $rgba
  * @return int|float
  */
-function rgba_to_luma(mixed $rgba)
+function rgba_to_luma($rgba)
 {
 	if (is_string($rgba)) {
 		$rgba = rgba_str_to_rgba_array($rgba);
@@ -1713,7 +1713,7 @@ function render_rgba_array(array $rgba_values): string
  * @param callable|null $logged_in_callback
  * @return bool
  */
-function register_ajax_callback(string $action, callable $generic_callback, mixed $logged_in_callback = null): bool
+function register_ajax_callback(string $action, callable $generic_callback, $logged_in_callback = null): bool
 {
 	if (!$action || !$generic_callback || !is_callable($generic_callback)) return false;
 	if (!$logged_in_callback || !is_callable($logged_in_callback)) {
