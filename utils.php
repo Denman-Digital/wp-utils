@@ -866,9 +866,10 @@ function fallback_progression(callable $validation_callback, ...$progressive_cal
  * @uses get_post_by_slug
  * @since 1.0.0
  * @param WP_Post|int|string $post Optional. Variable to be resolved to a post, by ID or slug.
+ * @param ?string $post_type Optional. Desired post type, or "any".
  * @return WP_Post|null
  */
-function resolve_post($post = null)
+function resolve_post($post = null, string $post_type = "")
 {
 	if (empty($post)) {
 		return $GLOBALS['post'] ?? null;
@@ -878,10 +879,10 @@ function resolve_post($post = null)
 			$post = get_post($post);
 			break;
 		case 'string': // Find by slug
-			$post = get_post_by_slug($post);
+			$post = get_post_by_slug($post, $post_type ?: "any");
 			break;
 	}
-	if (is_a($post, 'WP_Post')) {
+	if (is_a($post, 'WP_Post') && $post_type && in_array($post_type, [$post->post_type, "any"])) {
 		return $post;
 	}
 }
@@ -1318,7 +1319,7 @@ function time_elapsed_string($datetime, bool $full = false): string
 {
 	$now = new DateTime;
 	$ago = new DateTime($datetime);
-	$diff = $now->diff($ago);
+	$diff = (object) $now->diff($ago);
 
 	$diff->w = floor($diff->d / 7);
 	$diff->d %= 7;
