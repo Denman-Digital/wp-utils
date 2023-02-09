@@ -1,7 +1,7 @@
 {
 	"name": "denman-digital/wp-utils",
 	"description": "PHP utilities for WordPress development.",
-	"version": "1.1.1",
+	"version": "1.1.2",
 	"type": "library",
 	"keywords": [
 		"WordPress",
@@ -24,7 +24,7 @@
 		"php-parallel-lint/php-console-highlighter": "^0.5.0",
 		"php-parallel-lint/php-parallel-lint": "^1.2.0",
 		"php-stubs/wordpress-stubs": "^6.0",
-		"paulthewalton/acf-pro-stubs": "5.8.9.1"
+		"php-stubs/acf-pro-stubs": "^6.0"
 	},
 	"scripts": {
 		"lint": "@php ./vendor/bin/parallel-lint --exclude .git --exclude vendor ."
