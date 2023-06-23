@@ -1677,22 +1677,162 @@ function rgba_str_to_rgba_array(string $rgba_str): array
 }
 
 /**
- * Get an approximation of the luma for an RGBA color.
- * @since 1.1.0
- * @param array|string $rgba
- * @return int|float
+ * Calculate the approximate luma value of an RGB color.
+ * @since 1.1.3
+ * @param string|array $rgba
+ * @return float
  */
-function rgba_to_luma($rgba)
+function rgba_to_luma($rgba): float
 {
 	if (is_string($rgba)) {
 		$rgba = rgba_str_to_rgba_array($rgba);
 	}
-	extract($rgba);
-	return ($red * 2 + $blue + $green * 3) / 6;
+	foreach ($rgba as $name => $value) {
+		$adjusted = 0;
+		$value = $value / 255;
+
+		if ($value < 0.03928) {
+			$value = $value / 12.92;
+		} else {
+			$value = ($value + 0.055) / 1.055;
+			$value = pow($value, 2.4);
+		}
+		$rgba[$name] = $value;
+	}
+	return (float) $rgba["red"] * 0.2126 + $rgba["green"] * 0.7152 +
+		$rgba["blue"] * 0.0722;
 }
 
 /**
- * Render and RGBA array to string.
+ * Assert an array of RGBA color information to be a sequentially indexed array.
+ * @since 1.1.3
+ * @param array $rgba RGBA color information
+ * @return array
+ */
+function rgba_array_to_sequence(array $rgba): array
+{
+	return [
+		(int) ($rgba["red"] ?? $rgba["r"] ?? $rgba[0] ?? 0),
+		(int) ($rgba["green"] ?? $rgba["g"] ?? $rgba[1] ?? 0),
+		(int) ($rgba["blue"] ?? $rgba["b"] ?? $rgba[2] ?? 0),
+		(float) ($rgba["alpha"] ?? $rgba["a"] ?? $rgba[3] ?? 1)
+	];
+}
+
+/**
+ * Assert an array of RGBA color information to be an associatively indexed array.
+ * @since 1.1.3
+ * @param array $rgba RGBA color information
+ * @return array
+ */
+function rgba_array_to_assoc(array $rgba): array
+{
+	return [
+		"red" => (int) ($rgba["red"] ?? $rgba["r"] ?? $rgba[0] ?? 0),
+		"green" => (int) ($rgba["green"] ?? $rgba["g"] ?? $rgba[1] ?? 0),
+		"blue" => (int) ($rgba["blue"] ?? $rgba["b"] ?? $rgba[2] ?? 0),
+		"alpha" => (float) ($rgba["alpha"] ?? $rgba["a"] ?? $rgba[3] ?? 1)
+	];
+}
+
+/**
+ * Mix 2 RGB colours.
+ * ! Discards alpha information.
+ * @since 1.1.3
+ * @param int[] $rgb_color_1 RGB array.
+ * @param int[] $rgb_color_2 RGB array.
+ * @param float $weight
+ * @return int[]
+ */
+function mix_rgb(array $rgb_color_1 = [0, 0, 0], array $rgb_color_2 = [0, 0, 0], $weight = 0.5): array
+{
+	$color_1_weighted = array_map(function ($x) use ($weight) {
+		return $weight * $x;
+	}, $rgb_color_1);
+	$color_2_weighted = array_map(function ($x) use ($weight) {
+		return (1 - $weight) * $x;
+	}, $rgb_color_2);
+	return array_map(function ($x, $y) {
+		return round($x + $y);
+	}, $color_1_weighted, $color_2_weighted);
+}
+
+/**
+ * Mix pure white into an RGBA color.
+ * @since 1.1.3
+ * @param array $color RGBA color data.
+ * @param float $weight Proportion of white in tint.
+ * @return array
+ */
+function tint_rgba(array $color, $weight = 0.5): array
+{
+	$color = rgba_array_to_sequence($color);
+	$alpha = 1;
+	if (count($color) === 4) {
+		$alpha = array_pop($color);
+	}
+	$tint = mix_rgb($color, [255, 255, 255], $weight);
+	$tint[] = $alpha;
+	return $tint;
+}
+
+/**
+ * Mix 50% grey into an RGBA color.
+ * @since 1.1.3
+ * @param array $color RGBA color data.
+ * @param float $weight Proportion of grey in tone.
+ * @return int[]
+ */
+function tone_rgba(array $color, $weight = 0.5): array
+{
+	$color = rgba_array_to_sequence($color);
+	$alpha = 1;
+	if (count($color) === 4) {
+		$alpha = array_pop($color);
+	}
+	$tone = mix_rgb($color, [128, 128, 128], $weight);
+	$tone[] = $alpha;
+	return $tone;
+}
+
+/**
+ * Mix pure black into an RGBA color.
+ * @since 1.1.3
+ * @param array $color RGBA color data.
+ * @param float $weight Proportion of black in shade.
+ * @return int[]
+ */
+function shade_rgba(array $color, $weight = 0.5): array
+{
+	$color = rgba_array_to_sequence($color);
+	$alpha = 1;
+	if (count($color) === 4) {
+		$alpha = array_pop($color);
+	}
+	$shade = mix_rgb($color, [0, 0, 0], $weight);
+	$shade[] = $alpha;
+	return $shade;
+}
+
+/**
+ * Convert an array of RGBA color information to a hexidecimal color string.
+ * @since 1.1.3
+ * @param array $rgba_values
+ * @param bool $strip_alpha
+ * @return string
+ */
+function rgba_to_hex(array $rgba_values, bool $strip_alpha = false): string
+{
+	$red = min_max(($rgba_values["red"] ?? $rgba_values["r"] ?? 127), 0, 255);
+	$green = min_max(($rgba_values["green"] ?? $rgba_values["g"] ?? 127), 0, 255);
+	$blue = min_max(($rgba_values["blue"] ?? $rgba_values["b"] ?? 127), 0, 255);
+	$alpha = floor(min_max(($rgba_values["alpha"] ?? $rgba_values["a"] ?? 1) * 255, 0, 255));
+	$hex = sprintf("#%0x%0x%0x%0x", $red, $green, $blue, $alpha);
+	return $strip_alpha ? substr($hex, 0, 7) : $hex;
+}
+
+/**
+ * Render an RGBA array to string.
  * @since 1.1.0
  * @param array $rgba_values
  * @return string
