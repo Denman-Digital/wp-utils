@@ -882,7 +882,7 @@ function resolve_post($post = null, string $post_type = "")
 			$post = get_post_by_slug($post, $post_type ?: "any");
 			break;
 	}
-	if (is_a($post, 'WP_Post') && $post_type && in_array($post_type, [$post->post_type, "any"])) {
+	if (is_a($post, 'WP_Post') && (!$post_type || in_array($post_type, [$post->post_type, "any", ""]))) {
 		return $post;
 	}
 }
