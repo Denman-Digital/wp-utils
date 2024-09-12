@@ -1130,39 +1130,40 @@ function get_asset_contents(...$path_segments): string
  * Parse small subset of markdown to html.
  *
  * Includes: em & en dashes, bold, italic, inline code, links, paragraphs, and line-breaks.
+ * As of 1.1.5: added H1-6, UL, OL
  * @since 1.0.0
  * @param string $md Markdown content.
  * @return string Parsed HTML.
  */
 function mini_markdown_parse(string $md): string
 {
-	return preg_replace(
-		[
-			// '/^-|*|={3,}$/m', // hr
-			'/-{3}/', // em
-			'/-{2}/', // en
-			'/(?:\*{2}((?:[^*]|(?:\\\*))+)\*{2})|(?:_{2}((?:[^_]|(?:\\_))+)_{2})/', // bold
-			'/(?:\*((?:[^*]|(?:\\\*))+)\*)|(?:_((?:[^_]|(?:\\_))+)_)/', // italic
-			'/`([^`]+)`/', // code
-			'/\[([^\]]+)\]\(([^)]+)\)/', // link with text
-			'/\[\]\(([^)]+)\)/', // link
-			"/(.+)(?:(?: {2,}\R*)|\R{2,}|(?:\s*$))/", // paragraphs
-			"/(.+)\R{}/", // line breaks
-		],
-		[
-			// '<hr>',
-			'&mdash;',
-			'&ndash;',
-			'<strong>$1$2</strong>',
-			'<em>$1$2</em>',
-			'<code>$1</code>',
-			'<a href="$2">$1</a>',
-			'<a href="$1">$1</a>',
-			'<p>$1</p>',
-			'$1<br>',
-		],
-		trim($md)
-	);
+	$rules = [
+		// '/^-|*|={3,}$/m' => 			// '<hr>', // hr
+		'/-{3}/' => '&mdash;', // em
+		'/-{2}/' => '&ndash;', // en
+		'/(?:\*{2}((?:[^*]|(?:\\\*))+)\*{2})|(?:_{2}((?:[^_]|(?:\\_))+)_{2})/' => '<strong>$1$2</strong>', // bold
+		'/(?:\*((?:[^*]|(?:\\\*))+)\*)|(?:_((?:[^_]|(?:\\_))+)_)/' => '<em>$1$2</em>', // italic
+		'/`([^`]+)`/' => '<code>$1</code>', // code
+		'/\[([^\]]+)\]\(([^)]+)\)/' => '<a href="$2">$1</a>', // link with text
+		'/\[\]\(([^)]+)\)/' => '<a href="$1">$1</a>', // link
+		'/^#{6}\s(.*)/m' => '<h6>$1</h6>', // h6s
+		'/^#{5}\s(.*)/m' => '<h5>$1</h5>', // h5s
+		'/^#{4}\s(.*)/m' => '<h4>$1</h4>', // h4s
+		'/^#{3}\s(.*)/m' => '<h3>$1</h3>', // h3s
+		'/^#{2}\s(.*)/m' => '<h2>$1</h2>', // h2s
+		'/^#{1}\s(.*)/m' => '<h1>$1</h1>', // h1s
+		'/^[*-]\s(.*)/m' => "<ul><li>$1</li></ul>", // ul lists
+		'/^[0-9]+\.\s(.*)/m' => "<ol><li>$1</li></ol>", // ol lists
+		'/<\/ul>\s*<ul>/' => "", // fix extra ul // fix extra ul
+		'/<\/ol>\s*<ol>/' => "", // fix extra ol // fix extra ol
+		'/^([^<]]+)(?:(?: {2,}\R*)|\R{2,}|(?:\s*$))/m' => '<p>$1</p>', // paragraphs
+		"/(.+)\R{}/" => '$1<br>', // line breaks
+	];
+
+	foreach ($rules as $search => $replace) {
+		$md = preg_replace($search, $replace, $md);
+	}
+	return $md;
 }
 
 /**
