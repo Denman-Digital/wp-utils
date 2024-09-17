@@ -972,16 +972,20 @@ function get_post_descendants($post = null, int $depth = -1, bool $check_post_ty
 
 /**
  * Retrieve from an array only (a) string keys for truthy values and (b) numerically indexed strings
+ *
+ * modeled after [classnames](https://www.npmjs.com/package/classnames) on NPM
+ *
+ * @since 1.2.0 Returns string instead of string array
  * @since 1.0.0
- * @param string[] $classes
- * @return string[]
+ * @param array $classes
+ * @return string
  */
-function class_names(array $classes): array
+function class_names(array $classes): string
 {
 	$class_names = [];
 	foreach ((array) $classes as $key => $value) {
 		if (is_array($value)) {
-			$class_names = array_merge($class_names, class_names($value));
+			$class_names[] = class_names($value);
 		} else if (is_string($key)) {
 			if (!!$value) {
 				$class_names[] = $key;
@@ -990,8 +994,9 @@ function class_names(array $classes): array
 			$class_names[] = $value;
 		}
 	}
-	return $class_names;
+	return implode(' ', $class_names);
 }
+
 
 /**
  * Resolve to a string of space-separated class names.
