@@ -1154,7 +1154,7 @@ function get_asset_contents(string ...$path_segments): string
  * Parse small subset of markdown to html.
  *
  * Includes: em & en dashes, bold, italic, inline code, links, paragraphs, and line-breaks.
- * As of 1.1.5: added H1-6, UL, OL
+ * @since 1.2.0 added H1-6, UL, OL
  * @since 1.0.0
  * @param string $md Markdown content.
  * @return string Parsed HTML.
@@ -1948,4 +1948,64 @@ function sanitize_title_multiple(string $value): string
 	return implode("/", array_filter(array_map("sanitize_title", explode("/", urldecode($value))), function ($val) {
 		return !!$val;
 	}));
+}
+
+/**
+ * Combine multiple and optional style rules into an inline style string.
+ * @since 1.2.0
+ * @param array $styles
+ * @return string
+ */
+function inline_styles(array ...$styles): string
+{
+	$inline_styles = [];
+	$style_rules = array_merge(...$styles);
+	foreach ((array) $style_rules as $property => $value) {
+		if (is_string($property) && isset($value) && $value !== "") {
+			$inline_styles[$property] = $value;
+		}
+	}
+	$output = "";
+	array_walk($inline_styles, function ($val, $prop) use (&$output) {
+		$output .= "$prop:$val;";
+	});
+	return $output;
+}
+
+/**
+ * Render a single style rule value for a Block.
+ * @param ?string $value
+ * @return ?string
+ */
+function render_wp_block_style_rule(?string $value): ?string
+{
+	if ($value && \str_starts_with($value, "var:")) {
+		return "var(--wp--" . join("--", explode("|", substr($value, 4))) . ")";
+	}
+	return $value;
+}
+
+/**
+ * Render a 4-directional spacing style rule value.
+ * @param string[] $values
+ * @return string
+ */
+function render_wp_block_spacing(array $values): string
+{
+	$values = wp_parse_args($values, ["top" => 0, "right" => 0, "bottom" => 0, "left" => 0]);
+	$output = [];
+	foreach ($values as $dir => $value) {
+		$values[$dir] = render_wp_block_style_rule($value);
+	}
+	$output[] = $values["top"];
+	if (count(array_unique($values)) > 1) {
+		$output[] = $values["right"];
+		if ($values["right"] !== $values["left"]) {
+			$output[] = $values["bottom"];
+			$output[] = $values["left"];
+		} else if ($values["top"] !== $values["bottom"]) {
+			$output[] = $values["bottom"];
+		}
+	}
+	return implode(" ", $output);
 }
