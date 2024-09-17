@@ -14,6 +14,7 @@ use InvalidArgumentException;
 use WP_Post;
 use WP_Query;
 use WP_Term;
+use WP_Taxonomy;
 
 defined('ABSPATH') || exit; // Exit if accessed directly.
 
@@ -283,7 +284,7 @@ function array_clear_empty(array $array, bool $null_only = false): array
  * @param bool $wrap_null Optional. Whether to wrap null values in an array. Default false.
  * @return array
  */
-function assert_array($value, bool $wrap_null = false): array
+function assert_array(mixed $value, bool $wrap_null = false): array
 {
 	if (is_array($value)) {
 		return $value;
@@ -301,9 +302,9 @@ function assert_array($value, bool $wrap_null = false): array
  * @since 1.0.0
  * @param array $array Source array.
  * @param string|int $key Key to remove and return value.
- * @return mixed|void
+ * @return mixed
  */
-function array_pluck(array &$array, $key)
+function array_pluck(array &$array, string|int $key): mixed
 {
 	if (!is_array($array) || !array_key_exists($key, $array)) {
 		return;
@@ -374,9 +375,9 @@ function array_flatten(array $array): array
  * @uses min_max
  * @param mixed[] $array
  * @param int $n Position to retrieve value from. If negative, counts back from end of array. WIll not overflow array bounds.
- * @return mixed|void
+ * @return mixed
  */
-function array_nth(array $array, int $n)
+function array_nth(array $array, int $n): mixed
 {
 	if (!is_array($array)) {
 		return;
@@ -416,9 +417,9 @@ if (!function_exists('array_find')) {
 	 * @param array $array
 	 * @param callable $callback Validation callback. Is passed the value, key, and full array for each entry checked.
 	 * @param int $callback_args_count Optional. Number of arguments to pass to $callback. Default and maximum is 3.
-	 * @return mixed|void
+	 * @return mixed
 	 */
-	function array_find(array $array, callable $callback, int $callback_args_count = 3)
+	function array_find(array $array, callable $callback, int $callback_args_count = 3): mixed
 	{
 		foreach ($array as $key => $value) {
 			if (call_user_func_array($callback, array_slice([$value, $key, $array], 0, $callback_args_count))) {
@@ -434,7 +435,7 @@ if (!function_exists('array_find')) {
  * @since 1.0.0
  * @return array
  */
-function array_concat($array, ...$additions): array
+function array_concat(array $array, array ...$additions): array
 {
 	$arrays = array_map(function ($value) {
 		return (array) $value;
@@ -587,7 +588,7 @@ function resolve_arglist(array $arglist): array
  * @param array $defaults_and_allowed_keys Default values and allowed keys.
  * @return array
  */
-function parse_args($args, array $defaults_and_allowed_keys = []): array
+function parse_args(string|array|object $args, array $defaults_and_allowed_keys = []): array
 {
 	$defaults = array_filter($defaults_and_allowed_keys, "is_string", ARRAY_FILTER_USE_KEY);
 	// Get allowed keys
@@ -896,9 +897,9 @@ function resolve_post($post = null, string $post_type = "")
  * Resolve a variable to a taxonomy if possible.
  * @since 1.0.0
  * @param WP_Taxonomy|string $taxonomy Variable to be resolved to a taxonomy.
- * @return WP_Taxonomy|null
+ * @return ?WP_Taxonomy
  */
-function resolve_taxonomy($taxonomy)
+function resolve_taxonomy($taxonomy): ?WP_Taxonomy
 {
 	if (is_string($taxonomy)) {
 		$taxonomy = get_taxonomy($taxonomy);
@@ -1042,7 +1043,7 @@ function get_image_id(string $image_url): int
  * @param string $post_type The post-type slug, default is 'any'.
  * @return WP_Post|null
  */
-function get_post_by_slug(string $slug, string $post_type = 'any', string $post_status = "any")
+function get_post_by_slug(string $slug, string $post_type = 'any', string $post_status = "any"): ?WP_Post
 {
 	$posts = get_posts([
 		'name' => $slug,
@@ -1085,7 +1086,7 @@ function join_path_segments(array $segments): string
  * @param string[]|string ...$segments A series or array of path segments.
  * @return string
  */
-function get_asset_uri(...$segments): string
+function get_asset_uri(string ...$segments): string
 {
 	$path = join_path_segments(resolve_arglist($segments));
 	return get_template_directory_uri() . str_prefix($path, '/');
@@ -1101,7 +1102,7 @@ function get_asset_uri(...$segments): string
  * @param string[]|string ...$segments A series or array of path segments.
  * @return string
  */
-function get_asset_path(...$segments): string
+function get_asset_path(string ...$segments): string
 {
 	$path = join_path_segments(resolve_arglist($segments));
 	return get_template_directory() . str_prefix($path, '/');
@@ -1115,7 +1116,7 @@ function get_asset_path(...$segments): string
  * @param string[]|string ...$segments A series or array of path segments.
  * @return string
  */
-function get_asset_contents(...$path_segments): string
+function get_asset_contents(string ...$path_segments): string
 {
 	$path = get_asset_path(...$path_segments);
 	$contents = "";
@@ -1278,7 +1279,7 @@ function camel_case(string $str): string
  * @param string[]|string $exclude Optional. Taxonomy slug(s) to exclude.
  * @return WP_Taxonomy[]
  */
-function get_custom_taxonomies($exclude = ''): array
+function get_custom_taxonomies(string|array $exclude = ''): array
 {
 	return array_exclude_keys(
 		get_taxonomies(
@@ -1298,7 +1299,7 @@ function get_custom_taxonomies($exclude = ''): array
  * @param string[]|string $exclude Optional. Post type slug(s) to exclude.
  * @return WP_Post_Type[]
  */
-function get_custom_post_types($exclude = ""): array
+function get_custom_post_types(string|array $exclude = ""): array
 {
 	return array_exclude_keys(
 		get_post_types(
@@ -1686,7 +1687,7 @@ function rgba_str_to_rgba_array(string $rgba_str): array
  * @param string|array $rgba
  * @return float
  */
-function rgba_to_luma($rgba): float
+function rgba_to_luma(string|array $rgba): float
 {
 	if (is_string($rgba)) {
 		$rgba = rgba_str_to_rgba_array($rgba);
@@ -1748,7 +1749,7 @@ function rgba_array_to_assoc(array $rgba): array
  * @param float $weight
  * @return int[]
  */
-function mix_rgb(array $rgb_color_1 = [0, 0, 0], array $rgb_color_2 = [0, 0, 0], $weight = 0.5): array
+function mix_rgb(array $rgb_color_1 = [0, 0, 0], array $rgb_color_2 = [0, 0, 0], float $weight = 0.5): array
 {
 	$color_1_weighted = array_map(function ($x) use ($weight) {
 		return $weight * $x;
@@ -1768,7 +1769,7 @@ function mix_rgb(array $rgb_color_1 = [0, 0, 0], array $rgb_color_2 = [0, 0, 0],
  * @param float $weight Proportion of white in tint.
  * @return array
  */
-function tint_rgba(array $color, $weight = 0.5): array
+function tint_rgba(array $color, float $weight = 0.5): array
 {
 	$color = rgba_array_to_sequence($color);
 	$alpha = 1;
@@ -1787,7 +1788,7 @@ function tint_rgba(array $color, $weight = 0.5): array
  * @param float $weight Proportion of grey in tone.
  * @return int[]
  */
-function tone_rgba(array $color, $weight = 0.5): array
+function tone_rgba(array $color, float $weight = 0.5): array
 {
 	$color = rgba_array_to_sequence($color);
 	$alpha = 1;
@@ -1806,7 +1807,7 @@ function tone_rgba(array $color, $weight = 0.5): array
  * @param float $weight Proportion of black in shade.
  * @return int[]
  */
-function shade_rgba(array $color, $weight = 0.5): array
+function shade_rgba(array $color, float $weight = 0.5): array
 {
 	$color = rgba_array_to_sequence($color);
 	$alpha = 1;
