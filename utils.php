@@ -1919,3 +1919,21 @@ function register_ajax_callback(string $action, callable $generic_callback, $log
 	add_action("wp_ajax_{$action}", $logged_in_callback);
 	return true;
 }
+
+/**
+ * Convert URLs and email addresses to links in plaintext.
+ * @since 1.2.0
+ * @param string $text
+ * @param bool $new_tab
+ * @return string
+ */
+function make_plaintext_clickable(string $text, bool $new_tab = false): string
+{
+	$text = make_clickable(strip_tags($text));
+	if ($new_tab) {
+		$text = preg_replace("/(<a[^>]*?rel=(['\"])nofollow)(\\2)([^>]*?>.*?<\/a>)/", '$1 noreferrer noopener$3 target="_blank"$4', $text);
+	}
+	$text = preg_replace("/(<a[^>]*?>)https?:\/\/(.*?<\/a>)/", "$1$2", $text);
+	return $text;
+}
+
