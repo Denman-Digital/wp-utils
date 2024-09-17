@@ -547,6 +547,21 @@ function array_object_vars(array $objects, $props, string $key_var = ""): array
 }
 
 /**
+ * Get the opposite of an array intersection.
+ * @since 1.2.0
+ * @param array $arr1
+ * @param array $arr2
+ * @return array
+ */
+function array_divergence(array $arr1, array $arr2): array
+{
+	return array_merge(
+		array_diff($arr1, $arr2),
+		array_diff($arr2, $arr1),
+	);
+}
+
+/**
  * Unwrap single value arrays.
  *
  * Will recursively unwrap single-value arrays until left with either a single
