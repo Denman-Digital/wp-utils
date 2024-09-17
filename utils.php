@@ -3,7 +3,7 @@
 /**
  * Utility functions
  *
- * @package Denman_WP_Utils
+ * @package Denman_Utils
  */
 
 namespace Denman_Utils;
@@ -1614,6 +1614,36 @@ function is_link_external(string $url): bool
 	$domain = get_domain_of_url(get_bloginfo("url"));
 	if (strcasecmp($url_components['host'], $domain) === 0) return false; // url host looks exactly like the local host
 	return strrpos(strtolower($url_components['host']), ".$domain") !== strlen($url_components['host']) - strlen(".$domain"); // check if the url host is a subdomain
+}
+
+/**
+ * Check if a URL is (most likely) to go to an asset file.
+ * @since 1.2.0
+ * @param string $url
+ * @param string[] $exts Extensions to check for.
+ * @return bool
+ */
+function is_link_asset(string $url, array $exts = []): bool
+{
+	$url_components = parse_url($url);
+	$path = $url_components['path'] ?? '';
+	if (!$path) {
+		// no file/directory path in url
+		return false;
+	}
+	$matches = [];
+	if (!preg_match("/\\.([a-zA-Z]{3,4})(?:\\?.*?)?$/", $path, $matches)) {
+		// no file extension in url
+		return false;
+	}
+	$extension = $matches[0];
+
+	if ($exts) {
+		// If desired extension specified, check for that
+		return in_array($extension, $exts);
+	}
+	// else just return if it's not a hypertext file extension
+	return !in_array($extension, ["php", "html", "htm"]);
 }
 
 /**
