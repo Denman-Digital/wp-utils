@@ -1937,3 +1937,15 @@ function make_plaintext_clickable(string $text, bool $new_tab = false): string
 	return $text;
 }
 
+/**
+ * Sanitize title with multiple slug segments.
+ * @since 1.2.0
+ * @param string $value
+ * @return string
+ */
+function sanitize_title_multiple(string $value): string
+{
+	return implode("/", array_filter(array_map("sanitize_title", explode("/", urldecode($value))), function ($val) {
+		return !!$val;
+	}));
+}
