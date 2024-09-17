@@ -48,6 +48,7 @@ function not_empty($var): bool
 
 /**
  * Check whether string starts with substring.
+ * @deprecated 1.2.0
  * @since 1.0.0
  * @param string $haystack String to search within.
  * @param string $needle String to search for.
@@ -55,6 +56,7 @@ function not_empty($var): bool
  */
 function str_starts_with(string $haystack, string $needle): bool
 {
+	_deprecated_function("Denman_Utils\\str_starts_with", "6.0", "str_starts_with");
 	$length = strlen($needle);
 	if ($length == 0) {
 		return true;
@@ -62,8 +64,10 @@ function str_starts_with(string $haystack, string $needle): bool
 	return (substr($haystack, 0, $length) === $needle);
 }
 
+
 /**
  * Check whether string ends with substring.
+ * @deprecated 1.2.0
  * @since 1.0.0
  * @param string $haystack String to search within.
  * @param string $needle String to search for.
@@ -71,6 +75,7 @@ function str_starts_with(string $haystack, string $needle): bool
  */
 function str_ends_with(string $haystack, string $needle): bool
 {
+	_deprecated_function("Denman_Utils\\str_ends_with", "6.0", "str_ends_with");
 	$length = strlen($needle);
 	if ($length == 0) {
 		return true;
@@ -81,7 +86,6 @@ function str_ends_with(string $haystack, string $needle): bool
 /**
  * Ensure that a string starts with a prefix.
  *
- * @uses str_starts_with
  * @since 1.0.0
  * @param string $str Subject.
  * @param string $prefix Substring to look for/prepend.
@@ -89,7 +93,7 @@ function str_ends_with(string $haystack, string $needle): bool
  */
 function str_prefix(string $str, string $prefix): string
 {
-	if (!str_starts_with($str, $prefix)) {
+	if (!\str_starts_with($str, $prefix)) {
 		$str = $prefix . $str;
 	}
 	return $str;
@@ -98,7 +102,6 @@ function str_prefix(string $str, string $prefix): string
 /**
  * Ensure that a string ends with a postfix
  *
- * @uses str_ends_with
  * @since 1.0.0
  * @param string $str Subject
  * @param string $postfix Substring to look for/append
@@ -106,7 +109,7 @@ function str_prefix(string $str, string $prefix): string
  */
 function str_postfix(string $str, string $postfix): string
 {
-	if (!str_ends_with($str, $postfix)) {
+	if (!\str_ends_with($str, $postfix)) {
 		$str .= $postfix;
 	}
 	return $str;
@@ -131,7 +134,6 @@ function str_bookend(string $str, string $bookend): string
 /**
  * Ensure that a string doesn't start with a prefix
  *
- * @uses str_starts_with
  * @since 1.0.0
  * @param string $str Subject.
  * @param string $prefix Substring to look for/remove from start.
@@ -142,7 +144,7 @@ function str_unprefix(string $str, string $prefix, int $max = -1): string
 {
 	$max = $max >= 0 ? $max : -1;
 	$count = 0;
-	while ($prefix && ($max === -1 || $count < $max) && str_starts_with($str, $prefix)) {
+	while ($prefix && ($max === -1 || $count < $max) && \str_starts_with($str, $prefix)) {
 		$str = substr($str, strlen($prefix));
 	}
 	return $str;
@@ -151,7 +153,6 @@ function str_unprefix(string $str, string $prefix, int $max = -1): string
 /**
  * Ensure that a string doesn't end with a postfix
  *
- * @uses str_ends_with
  * @since 1.0.0
  * @param string $str Subject.
  * @param string $prefix Substring to look for/remove from end.
@@ -162,7 +163,7 @@ function str_unpostfix(string $str, string $postfix, int $max = -1): string
 {
 	$max = $max >= 0 ? $max : -1;
 	$count = 0;
-	while ($postfix && ($max === -1 || $count < $max) && str_ends_with($str, $postfix)) {
+	while ($postfix && ($max === -1 || $count < $max) && \str_ends_with($str, $postfix)) {
 		$str = substr($str, 0, -strlen($postfix));
 	}
 	return $str;
@@ -171,6 +172,7 @@ function str_unpostfix(string $str, string $postfix, int $max = -1): string
 
 /**
  * Check for existance of substring within a string
+ * @deprecated 1.2.0
  * @since 1.0.0
  * @param string $haystack String to search within.
  * @param string $needle String to search for.
@@ -179,6 +181,7 @@ function str_unpostfix(string $str, string $postfix, int $max = -1): string
  */
 function str_contains(string $haystack, string $needle, bool $case_insensitive = false): bool
 {
+	_deprecated_function("Denman_Utils\\str_contains", "6.0", "str_contains");
 	if ($case_insensitive) {
 		$haystack = strtolower($haystack);
 		$needle = strtolower($needle);
@@ -468,12 +471,14 @@ function array_force_assoc(array $array): array
 
 /**
  * Check whether an array has string keys
+ * @deprecated 1.2.0
  * @since 1.1.0
  * @param array $array
  * @return bool
  */
 function array_has_string_keys(array $array): bool
 {
+	_deprecated_function("Denman_Utils\\array_has_string_keys", "6.0", "array_is_list");
 	return count(array_filter(array_keys($array), 'is_string')) > 0;
 }
 
@@ -1053,8 +1058,6 @@ function get_post_by_slug(string $slug, string $post_type = 'any', string $post_
  * * strips extra slashes on segments
  *
  * @since 1.0.0
- * @uses str_starts_with
- * @uses str_ends_with
  * @param string[] $segments Array of path segments.
  * @return string
  */
@@ -1063,10 +1066,10 @@ function join_path_segments(array $segments): string
 	$path = implode('/', array_map(function ($segment) {
 		return trim($segment, '/');
 	}, $segments));
-	if (str_starts_with($segments[0], '/')) {
+	if (\str_starts_with($segments[0], '/')) {
 		$path = '/' . $path;
 	}
-	if (str_ends_with(array_nth($segments, -1), '/')) {
+	if (\str_ends_with(array_nth($segments, -1), '/')) {
 		$path .= '/';
 	}
 	return $path;
@@ -1634,7 +1637,7 @@ function is_link_relative(string $url): bool
 function hex_str_to_rgba_array(string $hex_color, float $alpha_fallback = 1.0): array
 {
 	$hex_color = trim(strtolower($hex_color));
-	if (str_starts_with($hex_color, "#")) {
+	if (\str_starts_with($hex_color, "#")) {
 		$hex_color = substr($hex_color, 1);
 	}
 	$alpha = $alpha_fallback;
