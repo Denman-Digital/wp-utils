@@ -1026,7 +1026,7 @@ function class_names(array $classes): string
  *
  * Similar to [classnames](https://www.npmjs.com/package/classnames) on NPM
  *
- * @since 2.0.0
+ * @since 2.0.1
  * @param mixed[] $classes
  * @return string[]
  */
