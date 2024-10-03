@@ -307,7 +307,7 @@ function assert_array(mixed $value, bool $wrap_null = false): array
 function array_pluck(array &$array, string|int $key): mixed
 {
 	if (!is_array($array) || !array_key_exists($key, $array)) {
-		return;
+		return null;
 	}
 	$plucked = $array[$key];
 	unset($array[$key]);
@@ -380,11 +380,11 @@ function array_flatten(array $array): array
 function array_nth(array $array, int $n): mixed
 {
 	if (!is_array($array)) {
-		return;
+		return null;
 	}
 	$length = count($array);
 	if (!$length) {
-		return;
+		return null;
 	}
 	$n = min_max($n, -$length, $length - 1); // don't overflow array bounds
 	return array_values($array)[$n >= 0 ? $n : $length + $n];
