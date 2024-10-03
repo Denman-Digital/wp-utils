@@ -413,19 +413,21 @@ if (!function_exists('array_some')) {
 if (!function_exists('array_find')) {
 	/**
 	 * Get the first entry in an array that satisfies the callback.
+	 * @since 1.2.0 Returns empty array instead of null if no entry satisfies callback
 	 * @since 1.0.0
 	 * @param array $array
 	 * @param callable $callback Validation callback. Is passed the value, key, and full array for each entry checked.
 	 * @param int $callback_args_count Optional. Number of arguments to pass to $callback. Default and maximum is 3.
-	 * @return mixed
+	 * @return array
 	 */
-	function array_find(array $array, callable $callback, int $callback_args_count = 3): mixed
+	function array_find(array $array, callable $callback, int $callback_args_count = 3): array
 	{
 		foreach ($array as $key => $value) {
 			if (call_user_func_array($callback, array_slice([$value, $key, $array], 0, $callback_args_count))) {
 				return ["key" => $key, "value" => $value];
 			}
 		}
+		return [];
 	}
 }
 
