@@ -633,11 +633,33 @@ function compare_exact($a, $b): int
 {
 	if ($a === $b) {
 		return 0;
-	} elseif ($a > $b) {
-		return 1;
 	}
-	return -1;
+	return ($a < $b) ? -1 : 1;
 }
+
+/**
+ * Generate a function to compare 2 objects or associative arrays by the value of a key
+ * @since 1.2.0
+ * @param int|string $key
+ * @param null|callable $callback
+ * @return callable
+ */
+function generate_compare_by_key(int|string $key, ?callable $callback = null): callable
+{
+	return (function ($a, $b) use ($key, $callback) {
+		$a_val = $a[$key];
+		$b_val = $b[$key];
+		if ($callback) {
+			return $callback($a_val, $b_val);
+		} else {
+			if ($a_val == $b_val) {
+				return 0;
+			}
+			return ($a_val < $b_val) ? -1 : 1;
+		}
+	});
+}
+
 
 /**
  * Get the value of a numeric string.
