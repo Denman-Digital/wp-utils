@@ -2,11 +2,14 @@
 
 PHP utilities for WordPress development.
 
+> **Note:**
+> Starting in v2.0.0, the Namespace is versioned and will be updating with minor releases
+
 ## Usage
 
 Either download and include manually, or merge the appropriate required version from the following into your `composer.json`:
 
-```json
+```jsonc
 {
 	"require": {
 		// "denman-digital/wp-utils": "^1.0" // PHP 5.6+
