@@ -6,7 +6,7 @@
  * @package Denman_Utils
  */
 
-namespace Denman_Utils;
+namespace Denman_Utils\v2;
 
 use ArrayObject;
 use DateTime;
