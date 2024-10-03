@@ -995,13 +995,13 @@ function get_post_descendants($post = null, int $depth = -1, bool $check_post_ty
 }
 
 /**
- * Retrieve from an array only (a) string keys for truthy values and (b) numerically indexed strings
+ * Collapse an array to only (a) string keys for truthy values and (b) numerically indexed strings
  *
  * modeled after [classnames](https://www.npmjs.com/package/classnames) on NPM
  *
  * @since 1.2.0 Returns string instead of string array
  * @since 1.0.0
- * @param array $classes
+ * @param mixed[] $classes
  * @return string
  */
 function class_names(array $classes): string
@@ -1019,6 +1019,32 @@ function class_names(array $classes): string
 		}
 	}
 	return implode(' ', $class_names);
+}
+
+/**
+ * Retrieve from an array only (a) string keys for truthy values and (b) numerically indexed strings
+ *
+ * Similar to [classnames](https://www.npmjs.com/package/classnames) on NPM
+ *
+ * @since 2.0.0
+ * @param mixed[] $classes
+ * @return string[]
+ */
+function class_names_array(array $classes): array
+{
+	$class_names = [];
+	foreach ((array) $classes as $key => $value) {
+		if (is_array($value)) {
+			$class_names[] = class_names($value);
+		} else if (is_string($key)) {
+			if (!!$value) {
+				$class_names[] = $key;
+			}
+		} else if (is_string($value)) {
+			$class_names[] = $value;
+		}
+	}
+	return $class_names;
 }
 
 
