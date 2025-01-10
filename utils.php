@@ -1783,12 +1783,14 @@ function rgba_str_to_rgba_array(string $rgba_str): array
 
 /**
  * Calculate the approximate luma value of an RGB color.
+ * @deprecated 2.0.3
  * @since 1.1.3
  * @param string|array $rgba
  * @return float
  */
 function rgba_to_luma(string|array $rgba): float
 {
+	_deprecated_function("Denman_Utils\\v2\\rgba_to_luma", "Denman_Utils v2.0.3", "Denman_Utils\\v2\\rgba_to_luminance");
 	if (is_string($rgba)) {
 		$rgba = rgba_str_to_rgba_array($rgba);
 	}
@@ -1807,6 +1809,33 @@ function rgba_to_luma(string|array $rgba): float
 	return (float) $rgba["red"] * 0.2126 + $rgba["green"] * 0.7152 +
 		$rgba["blue"] * 0.0722;
 }
+
+/**
+ * Calculate the approximate luminance value of an RGBA color
+ * @param string|array $rgba
+ * @return float
+ */
+function rgba_to_luminance(string|array $rgba): float
+{
+	if (is_string($rgba)) {
+		$rgba = rgba_str_to_rgba_array($rgba);
+	}
+	$rgba_linearized = [];
+	foreach ($rgba as $channel => $value) {
+		$value = $value / 255;
+		if ($value < 0.04045) {
+			$value = $value / 12.92;
+		} else {
+			$value = ($value + 0.055) / 1.055;
+			$value = pow($value, 2.4);
+		}
+		$rgba_linearized[$channel] = $value;
+	}
+
+	return (float) $rgba_linearized["red"] * 0.2126 + $rgba_linearized["green"] * 0.7152 +
+		$rgba_linearized["blue"] * 0.0722;
+}
+
 
 /**
  * Assert an array of RGBA color information to be a sequentially indexed array.
