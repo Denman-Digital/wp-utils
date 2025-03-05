@@ -938,7 +938,7 @@ function resolve_post($post = null, string $post_type = "")
  * @param WP_Taxonomy|string $taxonomy Variable to be resolved to a taxonomy.
  * @return ?WP_Taxonomy
  */
-function resolve_taxonomy($taxonomy): ?WP_Taxonomy
+function resolve_taxonomy($taxonomy)
 {
 	if (is_string($taxonomy)) {
 		$taxonomy = get_taxonomy($taxonomy);
@@ -1663,27 +1663,40 @@ function do_actions_sequence(array $hooks, ...$args): void
 /**
  * Get the domain of a URL.
  * @since 1.1.0
- * @param string $url
+ * @since 2.0.3 added $include_subdomains param.
+ * @param string $url The URL to parse.
+ * @param bool|int $include_subdomains The max number of subdomains allowed. Set boolean `true` to allow up to (almost) PHP_INT_MAX subdomains.
  * @return string
  */
-function get_domain_of_url(string $url): string
+function get_domain_of_url(string $url, bool|int $include_subdomains = false): string
 {
-	return implode(".", array_slice(explode(".", parse_url($url)["host"]), -2));
+	$host = parse_url($url, PHP_URL_HOST);
+	if (empty($host)) return "";
+	// get the number of allowable subdomains
+	$include_subdomains = $include_subdomains === true ? PHP_INT_MAX - 2 : min_max(intval($include_subdomains), 0, PHP_INT_MAX - 2);
+	return implode(".", array_slice(explode(".", $host), -1 * ($include_subdomains + 2)));
 }
 
 /**
  * Check if a URL is (most likely) to go to an external resource.
  * @since 1.1.0
- * @param string $url
+ * @since 2.0.3 added $allow_subdomains param.
+ * @param string $url The URL to parse.
+ * @param bool $allow_subdomains Whether to treat different subdomains as local or external to each other.
  * @return bool
  */
-function is_link_external(string $url): bool
+function is_link_external(string $url, bool $allow_subdomains = true): bool
 {
-	$url_components = parse_url($url);
-	if (empty($url_components['host'])) return false;  // we will treat url like '/relative.php' as relative
-	$domain = get_domain_of_url(get_bloginfo("url"));
-	if (strcasecmp($url_components['host'], $domain) === 0) return false; // url host looks exactly like the local host
-	return strrpos(strtolower($url_components['host']), ".$domain") !== strlen($url_components['host']) - strlen(".$domain"); // check if the url host is a subdomain
+	$url_domain = get_domain_of_url($url, true);
+	if (empty($url_domain)) return false;  // we will treat any url without an explicit domain as relative, ie: not external
+
+	$local_domain = get_domain_of_url(get_bloginfo("url"), $allow_subdomains);
+	if (strcasecmp($url_domain, $local_domain) === 0) return false; // url domain matches the local domain, ie: not external
+	if ($allow_subdomains) {
+		return (strrpos(strtolower($url_domain), ".$local_domain") !== strlen($url_domain) - strlen(".$local_domain")); // check if the url domain is a subdomain of the local domain
+	} else {
+		return strcasecmp($url_domain, "www.$local_domain") !== 0; // check if url domain uses "www" subdomain of local domain, ie: not external
+	}
 }
 
 /**
