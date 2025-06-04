@@ -390,45 +390,41 @@ function array_nth(array $array, int $n): mixed
 	return array_values($array)[$n >= 0 ? $n : $length + $n];
 }
 
-if (!function_exists('array_some')) {
-	/**
-	 * Check if any entry in an array satisfies the callback.
-	 * @since 1.0.0
-	 * @param array $array
-	 * @param callable $callback Validation callback.
-	 * @param int $callback_args_count Optional. Number of arguments to pass to $callback. Default and maximum is 3.
-	 * @return bool
-	 */
-	function array_some(array $array, callable $callback, int $callback_args_count = 3): bool
-	{
-		foreach ($array as $key => $value) {
-			if (call_user_func_array($callback, array_slice([$value, $key, $array], 0, $callback_args_count))) {
-				return true;
-			}
+/**
+ * Check if any entry in an array satisfies the callback.
+ * @since 1.0.0
+ * @param array $array
+ * @param callable $callback Validation callback.
+ * @param int $callback_args_count Optional. Number of arguments to pass to $callback. Default and maximum is 3.
+ * @return bool
+ */
+function array_some(array $array, callable $callback, int $callback_args_count = 3): bool
+{
+	foreach ($array as $key => $value) {
+		if (call_user_func_array($callback, array_slice([$value, $key, $array], 0, $callback_args_count))) {
+			return true;
 		}
-		return false;
 	}
+	return false;
 }
 
-if (!function_exists('array_find')) {
-	/**
-	 * Get the first entry in an array that satisfies the callback.
-	 * @since 1.2.0 Returns empty array instead of null if no entry satisfies callback
-	 * @since 1.0.0
-	 * @param array $array
-	 * @param callable $callback Validation callback. Is passed the value, key, and full array for each entry checked.
-	 * @param int $callback_args_count Optional. Number of arguments to pass to $callback. Default and maximum is 3.
-	 * @return array
-	 */
-	function array_find(array $array, callable $callback, int $callback_args_count = 3): array
-	{
-		foreach ($array as $key => $value) {
-			if (call_user_func_array($callback, array_slice([$value, $key, $array], 0, $callback_args_count))) {
-				return ["key" => $key, "value" => $value];
-			}
+/**
+ * Get the first entry in an array that satisfies the callback.
+ * @since 1.2.0 Returns empty array instead of null if no entry satisfies callback
+ * @since 1.0.0
+ * @param array $array
+ * @param callable $callback Validation callback. Is passed the value, key, and full array for each entry checked.
+ * @param int $callback_args_count Optional. Number of arguments to pass to $callback. Default and maximum is 3.
+ * @return array
+ */
+function array_find(array $array, callable $callback, int $callback_args_count = 3): array
+{
+	foreach ($array as $key => $value) {
+		if (call_user_func_array($callback, array_slice([$value, $key, $array], 0, $callback_args_count))) {
+			return ["key" => $key, "value" => $value];
 		}
-		return [];
 	}
+	return [];
 }
 
 /**
@@ -1481,17 +1477,15 @@ function flatten_blocklist(array $blocklist): array
 	}, []);
 }
 
-if (!function_exists('esc_regex')) {
-	/**
-	 * Escape a regex string
-	 * @since 1.0.0
-	 * @param string $str
-	 * @return string
-	 */
-	function esc_regex(string $str): string
-	{
-		return preg_replace('/([^\w])/', '\\\$0', $str);
-	}
+/**
+ * Escape a regex string
+ * @since 1.0.0
+ * @param string $str
+ * @return string
+ */
+function esc_regex(string $str): string
+{
+	return preg_replace('/([^\w])/', '\\\$0', $str);
 }
 
 /**
