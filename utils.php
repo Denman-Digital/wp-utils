@@ -11,6 +11,7 @@ namespace Denman_Utils\v2;
 use ArrayObject;
 use DateTime;
 use InvalidArgumentException;
+use WP_Block;
 use WP_Post;
 use WP_Query;
 use WP_Term;
@@ -24,7 +25,7 @@ defined('ABSPATH') || exit; // Exit if accessed directly.
  * @param mixed $var
  * @return mixed
  */
-function pass_through($var)
+function pass_through(mixed $var): mixed
 {
 	return $var;
 }
@@ -37,12 +38,12 @@ function pass_through($var)
  * @param mixed $var
  * @return bool
  */
-function is_not_null($var): bool
+function is_not_null(mixed $var): bool
 {
 	return isset($var);
 }
 
-function not_empty($var): bool
+function not_empty(mixed $var): bool
 {
 	return !empty($var);
 }
@@ -906,14 +907,15 @@ function fallback_progression(callable $validation_callback, ...$progressive_cal
  *
  * @uses get_post_by_slug
  * @since 1.0.0
+ * @since 2.0.5 Explicitly returns null when resolution fails.
  * @param WP_Post|int|string $post Optional. Variable to be resolved to a post, by ID or slug.
  * @param ?string $post_type Optional. Desired post type, or "any".
  * @return WP_Post|null
  */
-function resolve_post($post = null, string $post_type = "")
+function resolve_post($post = null, string $post_type = ""): ?WP_Post
 {
 	if (empty($post)) {
-		return $GLOBALS['post'] ?? null;
+		$post = $GLOBALS['post'] ?? null;
 	}
 	switch (gettype($post)) {
 		case 'integer': // Find by ID
@@ -926,6 +928,7 @@ function resolve_post($post = null, string $post_type = "")
 	if (is_a($post, 'WP_Post') && (!$post_type || in_array($post_type, [$post->post_type, "any", ""]))) {
 		return $post;
 	}
+	return null;
 }
 
 /**
@@ -1470,8 +1473,8 @@ function flatten_blocklist(array $blocklist): array
 {
 	return array_reduce($blocklist, function ($carry, $item) {
 		$carry[] = $item;
-		if (!empty($item["innerBlocks"])) {
-			$carry = array_merge($carry, flatten_blocklist($item["innerBlocks"]));
+		if (!empty($item->innerBlocks)) {
+			$carry = array_merge($carry, flatten_blocklist($item->innerBlocks));
 		}
 		return $carry;
 	}, []);
