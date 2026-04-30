@@ -994,6 +994,22 @@ function get_post_descendants($post = null, int $depth = -1, bool $check_post_ty
 }
 
 /**
+ * Check if a post is an ancestor to the current post.
+ * @since 2.0.6
+ * @param WP_Post|int $maybe_parent Target parent post.
+ * @param WP_Post|int $maybe_child Target post, defaults to global $post.
+ * @return bool
+ */
+function is_child_of(WP_Post|int $maybe_parent, WP_Post|int $maybe_child = 0): bool
+{
+	$maybe_parent_id = resolve_post($maybe_parent)?->ID;
+	$maybe_child_id = resolve_post($maybe_child)?->ID;
+	if (!$maybe_parent_id || !$maybe_child_id || $maybe_parent_id === $maybe_child_id) return false;
+	$ancestor_ids = get_post_ancestors($maybe_child_id);
+	return in_array($maybe_parent_id, $ancestor_ids);
+}
+
+/**
  * Collapse an array to only (a) string keys for truthy values and (b) numerically indexed strings
  *
  * modeled after [classnames](https://www.npmjs.com/package/classnames) on NPM
@@ -1338,6 +1354,17 @@ function kebab_case(string $str): string
 function camel_case(string $str): string
 {
 	return lcfirst(pascal_case($str));
+}
+
+/**
+ * Strip all non-numeric characters from a string.
+ * @since 2.0.6
+ * @param string $str
+ * @return string
+ */
+function strip_non_numeric_chars(string $str): string
+{
+	return preg_replace('/[^0-9]/', '', $str);
 }
 
 /** Get an array of registered public custom taxonomies.
@@ -2097,4 +2124,22 @@ function render_wp_block_spacing(array $values): string
 		}
 	}
 	return implode(" ", $output);
+}
+
+/**
+ * Trigger a 404
+ * You probably want to trigger this following appropriate logic during the `template_redirect` hook
+ * @since 2.0.6
+ * @return never
+ */
+function wp_404_and_exit(): never
+{
+	global $wp_query, $current_template;
+	$wp_query->set_404(); // Tells WordPress this is a 404
+	$current_template = get_query_template('404'); // Set the template to 404
+	status_header(404); // Sends the correct HTTP 404 status code
+	nocache_headers(); // Prevents caching of the 404 page
+	// This includes the 404.php template file from your theme
+	include($current_template);
+	exit; // Stops further execution of the standard page
 }
